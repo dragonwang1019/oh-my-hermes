@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>算數小島大冒險</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
+<style>
+/* 版面概念：一座海上小島地圖。天空藍底、白色紙卡題目、陽光黃按鈕；數字用圓胖的 Baloo，中文用圓體粉圓。 */
+:root{
+  --bg:#E6F4FA; --bg2:#D3EBF5; --paper:#FFFFFF; --ink:#1E3747; --muted:#5F7B8B; --line:#C6DFEA;
+  --sun:#FFC53D; --sun-d:#D99A0B; --coral:#FF6B57; --coral-d:#D2412F; --leaf:#34AE6E; --leaf-d:#23824F;
+  --sky:#2F93D6; --sky-d:#1C6EA6; --grape:#8C6BE0; --grape-d:#6646B8;
+  --sky-soft:#CFE9F8; --sun-soft:#FFF0C7; --leaf-soft:#D3F2E1; --coral-soft:#FFE0DA;
+  --on-accent:#1E3747; --on-strong:#FFFFFF;
+  --silver:#D5DCE1; --silver-ink:#3D4A52; --gold:#F2C14E; --gold-ink:#5A4300;
+  --bill1:#E66B6B; --bill5:#B07A4A; --bill10:#4F7FD0; --bill-ink:#FFFFFF;
+  --belly:#E9F9D9;
+  --font-num:"Baloo 2","Huninn","Noto Sans TC",sans-serif;
+  --font-body:"Huninn","Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  --r:20px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0E2230; --bg2:#13303F; --paper:#183447; --ink:#EAF4FA; --muted:#9DB8C7; --line:#2C4C61;
+  --sun:#FFCF5C; --sun-d:#C9970F; --coral:#FF8A78; --coral-d:#D25443; --leaf:#55C98D; --leaf-d:#2E9461;
+  --sky:#5DB3EC; --sky-d:#2F84BF; --grape:#A78BFA; --grape-d:#7A5BD6;
+  --sky-soft:#1D4560; --sun-soft:#4A3D16; --leaf-soft:#1C4733; --coral-soft:#4D2A26;
+  --on-accent:#1A2B36; --on-strong:#10202B;
+  --belly:#2E5A3F; color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E2230; --bg2:#13303F; --paper:#183447; --ink:#EAF4FA; --muted:#9DB8C7; --line:#2C4C61;
+  --sun:#FFCF5C; --sun-d:#C9970F; --coral:#FF8A78; --coral-d:#D25443; --leaf:#55C98D; --leaf-d:#2E9461;
+  --sky:#5DB3EC; --sky-d:#2F84BF; --grape:#A78BFA; --grape-d:#7A5BD6;
+  --sky-soft:#1D4560; --sun-soft:#4A3D16; --leaf-soft:#1C4733; --coral-soft:#4D2A26;
+  --on-accent:#1A2B36; --on-strong:#10202B;
+  --belly:#2E5A3F; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink); font-family:var(--font-body);
+  font-size:18px; line-height:1.6; min-height:100vh;
+  background-image:radial-gradient(circle at 12% 8%, var(--bg2) 0 120px, transparent 121px),
+                   radial-gradient(circle at 92% 30%, var(--bg2) 0 90px, transparent 91px);
+}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:12px 48px}
+.num{font-family:var(--font-num);font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:4px solid var(--sky);outline-offset:3px}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
+
+/* 頂部列 */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:8px}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;background:none;border:0;padding:0}
+.brand b{font-size:1.35rem;letter-spacing:.04em}
+.brand .mini{width:44px;height:44px}
+.pill{display:inline-flex;align-items:center;gap:6px;background:var(--paper);border:2px solid var(--line);border-radius:999px;padding:4px 14px;font-weight:700}
+.icon-btn{background:var(--paper);border:2px solid var(--line);border-radius:999px;width:44px;height:44px;display:grid;place-items:center;font-size:1.2rem}
+
+/* 按鈕 */
+.btn{border:0;border-radius:16px;padding:12px 22px;font-weight:700;font-size:1.1rem;
+  background:var(--sun);color:var(--on-accent);box-shadow:0 5px 0 var(--sun-d);transition:transform .08s, box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--sun-d)}
+.btn.sky{background:var(--sky);color:var(--on-strong);box-shadow:0 5px 0 var(--sky-d)}
+.btn.leaf{background:var(--leaf);color:var(--on-strong);box-shadow:0 5px 0 var(--leaf-d)}
+.btn.coral{background:var(--coral);color:var(--on-strong);box-shadow:0 5px 0 var(--coral-d)}
+.btn.ghost{background:var(--paper);color:var(--ink);box-shadow:0 5px 0 var(--line);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* 首頁 */
+.hero{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center;padding-block:18px 8px}
+.hero .mascot{width:150px;height:150px}
+.bubble{background:var(--paper);border:3px solid var(--ink);border-radius:24px;padding:14px 20px;position:relative;font-size:1.15rem;min-width:0}
+.bubble::before{content:"";position:absolute;left:-16px;top:40%;border:8px solid transparent;border-right-color:var(--ink);border-width:10px 14px 10px 0}
+.hero h1{font-size:clamp(1.8rem,5vw,2.6rem);letter-spacing:.06em}
+.modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
+.mode{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;text-align:left;
+  background:var(--paper);border:3px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:0 6px 0 var(--line);transition:transform .12s}
+.mode:hover{transform:translateY(-3px)}
+.mode .mi{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;font-size:2rem}
+.mode h3{font-size:1.25rem}
+.mode p{margin:2px 0 0;color:var(--muted);font-size:.95rem;line-height:1.45}
+.mi.a{background:var(--leaf-soft)}.mi.b{background:var(--sun-soft)}.mi.c{background:var(--coral-soft)}.mi.d{background:var(--sky-soft)}
+.sec-title{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-block:18px 10px}
+.sec-title h2{font-size:1.5rem}
+.note{color:var(--muted);font-size:.95rem}
+
+/* 地圖 */
+.map{position:relative;display:flex;flex-direction:column;gap:6px;padding-block:10px}
+.stage{display:flex;align-items:center;gap:14px;width:min(100%,430px);background:var(--paper);border:3px solid var(--line);
+  border-radius:22px;padding:10px 16px 10px 10px;text-align:left;box-shadow:0 5px 0 var(--line)}
+.stage:nth-child(4n+2){margin-left:12%}.stage:nth-child(4n+3){margin-left:24%}.stage:nth-child(4n){margin-left:12%}
+.stage .dot{flex:none;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:1.8rem;background:var(--sky-soft);border:3px solid var(--sky)}
+.stage.done .dot{background:var(--leaf-soft);border-color:var(--leaf)}
+.stage.boss .dot{background:var(--coral-soft);border-color:var(--coral)}
+.stage.locked{opacity:.5}
+.stage .sn{font-size:.85rem;color:var(--muted);letter-spacing:.08em}
+.stage b{display:block;font-size:1.15rem}
+.stars{color:var(--sun-d);letter-spacing:2px;font-size:1.05rem}
+.link-line{height:18px;border-left:4px dotted var(--line);margin-left:44px}
+
+/* 單元格子 */
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.topic{background:var(--paper);border:3px solid var(--line);border-radius:18px;padding:14px 10px;box-shadow:0 5px 0 var(--line);text-align:center}
+.topic .ti{font-size:2rem;display:block}
+.topic b{display:block;font-size:1.05rem}
+.topic small{color:var(--muted)}
+
+/* 遊戲 */
+.hud{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-block:6px 10px}
+.hearts{font-size:1.4rem;letter-spacing:2px}
+.progress{flex:1 1 160px;height:16px;background:var(--paper);border:2px solid var(--line);border-radius:999px;overflow:hidden;min-width:120px}
+.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--leaf),var(--sky));transition:width .3s}
+.timebar i{background:linear-gradient(90deg,var(--coral),var(--sun))}
+.card{background:var(--paper);border:3px solid var(--ink);border-radius:26px;padding:20px;box-shadow:0 8px 0 var(--ink);position:relative}
+.qhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.tag{font-size:.85rem;font-weight:700;padding:2px 12px;border-radius:999px;background:var(--sky-soft);color:var(--ink)}
+.qno{font-family:var(--font-num);font-weight:800;color:var(--muted)}
+.speak{margin-left:auto;background:var(--sun-soft);border:2px solid var(--sun);border-radius:999px;padding:2px 12px;font-size:.95rem}
+.qtext{font-size:clamp(1.25rem,3.6vw,1.6rem);font-weight:700;line-height:1.7;margin:6px 0 10px}
+.qtext b,.qtext .n{font-family:var(--font-num);color:var(--sky-d);font-size:1.15em}
+:root[data-theme="dark"] .qtext b{color:var(--sky)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .qtext b{color:var(--sky)}}
+.vis{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin-block:6px 14px}
+.vis-svg{width:min(100%,260px);height:auto}
+.vis-svg.wide{width:min(100%,480px)}
+.mascot-row{position:absolute;right:-8px;top:-54px;width:84px;height:84px}
+.mascot-row svg{width:100%;height:100%}
+
+/* 直式 */
+.vert{display:inline-grid;font-family:var(--font-num);font-weight:800;font-size:2.2rem;line-height:1.15;background:var(--sun-soft);padding:10px 22px;border-radius:16px}
+.vert .row{display:flex;justify-content:flex-end}
+.vert .row span{width:1.05em;text-align:center}
+.vert .bar{border-top:4px solid var(--ink);margin-top:4px}
+
+/* 選項 */
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.choice{min-height:68px;border:3px solid var(--line);background:var(--paper);border-radius:18px;font-size:1.35rem;font-weight:700;
+  box-shadow:0 5px 0 var(--line);padding:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.choice:hover:not(:disabled){border-color:var(--sky)}
+.choice.right{background:var(--leaf-soft);border-color:var(--leaf);box-shadow:0 5px 0 var(--leaf)}
+.choice.wrong{background:var(--coral-soft);border-color:var(--coral);box-shadow:0 5px 0 var(--coral);animation:shake .35s}
+.choice.sel{background:var(--sky-soft);border-color:var(--sky);box-shadow:0 5px 0 var(--sky)}
+.frac{display:inline-flex;flex-direction:column;align-items:center;font-family:var(--font-num);line-height:1;vertical-align:middle;margin:0 .15em}
+.frac span:first-child{border-bottom:3px solid currentColor;padding:0 .2em .08em}
+.frac span:last-child{padding-top:.08em}
+
+/* 鍵盤 */
+.keypad-wrap{display:grid;gap:12px;justify-items:center}
+.display{min-width:200px;min-height:64px;border:3px dashed var(--sky);border-radius:16px;padding:4px 18px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:2rem;font-weight:800;background:var(--sky-soft)}
+.display .num{min-width:1ch}
+.display .unit{font-size:1.1rem;color:var(--muted)}
+.keypad{display:grid;grid-template-columns:repeat(4,64px);gap:10px}
+.key{height:58px;border-radius:14px;border:2px solid var(--line);background:var(--paper);box-shadow:0 4px 0 var(--line);font-family:var(--font-num);font-weight:800;font-size:1.6rem}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 var(--line)}
+.key.ok{grid-row:span 2;height:auto;background:var(--leaf);color:var(--on-strong);border-color:var(--leaf-d);box-shadow:0 4px 0 var(--leaf-d);font-family:var(--font-body);font-size:1.15rem}
+.key.fn{font-size:1.1rem;font-family:var(--font-body)}
+
+/* 回饋 */
+.feedback{margin-top:16px;border-radius:18px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:center}
+.feedback.ok{background:var(--leaf-soft);border:3px solid var(--leaf)}
+.feedback.bad{background:var(--coral-soft);border:3px solid var(--coral)}
+.feedback h3{font-size:1.35rem}
+.feedback p{margin:2px 0 0;font-size:1rem}
+.combo{font-family:var(--font-num);font-weight:800;color:var(--coral)}
+.nav-row{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:16px}
+.dots{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;justify-content:center}
+.dots button{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:var(--paper);font-family:var(--font-num);font-weight:800;font-size:.9rem;padding:0}
+.dots button.filled{background:var(--sky-soft);border-color:var(--sky)}
+.dots button.cur{outline:3px solid var(--sun);outline-offset:1px}
+
+/* 錢幣 */
+.coins{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;max-width:520px}
+.coin{display:inline-grid;place-items:center;border-radius:50%;font-family:var(--font-num);font-weight:800;background:var(--silver);color:var(--silver-ink);border:3px solid var(--silver-ink);line-height:1}
+.coin.c1{width:38px;height:38px;font-size:.9rem}.coin.c5{width:44px;height:44px}.coin.c10{width:50px;height:50px;font-size:1.1rem}
+.coin.c50{width:58px;height:58px;font-size:1.2rem;background:var(--gold);color:var(--gold-ink);border-color:var(--gold-ink)}
+.bill{display:inline-grid;place-items:center;width:96px;height:50px;border-radius:8px;font-family:var(--font-num);font-weight:800;color:var(--bill-ink);border:3px dashed var(--bill-ink);outline:3px solid var(--bill1);background:var(--bill1)}
+.bill.b500{background:var(--bill5);outline-color:var(--bill5)}.bill.b1000{background:var(--bill10);outline-color:var(--bill10)}
+
+/* 乘法圖 */
+.groups{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.grp{border:3px dashed var(--sky);border-radius:16px;padding:6px 8px;font-size:1.6rem;max-width:150px;display:flex;flex-wrap:wrap;justify-content:center;line-height:1.25}
+.pattern{font-size:2.2rem;letter-spacing:6px;text-align:center;word-break:break-all}
+.pattern .q{display:inline-grid;place-items:center;width:1.3em;height:1.3em;border:3px dashed var(--coral);border-radius:10px;font-size:.8em;color:var(--coral);vertical-align:middle}
+
+/* 圖形 SVG 共用 */
+.sv-fill{fill:var(--sky-soft);stroke:var(--sky-d);stroke-width:4;stroke-linejoin:round}
+.sv-shade{fill:var(--sun);stroke:var(--ink);stroke-width:3}
+.sv-blank{fill:var(--paper);stroke:var(--ink);stroke-width:3}
+.sv-ink{fill:var(--ink)}
+.sv-line{stroke:var(--ink)}
+.sv-text{fill:var(--ink);font-family:var(--font-num);font-weight:800}
+.clock .cf{fill:var(--paper)}.clock .cr{fill:none;stroke:var(--ink);stroke-width:6}
+.clock .hh{stroke:var(--coral);stroke-width:9;stroke-linecap:round}.clock .mh{stroke:var(--sky);stroke-width:5;stroke-linecap:round}
+.ruler-body{fill:var(--sun-soft);stroke:var(--ink);stroke-width:2}
+.pencil{fill:var(--leaf)}.pencil-tip{fill:var(--sun-soft);stroke:var(--ink);stroke-width:1.5}
+
+/* 結果 */
+.result{text-align:center;display:grid;gap:14px;justify-items:center}
+.score{font-family:var(--font-num);font-weight:800;font-size:clamp(4rem,16vw,7rem);line-height:1;color:var(--coral)}
+.stamp{display:inline-block;border:5px solid var(--coral);color:var(--coral);border-radius:50%;width:120px;height:120px;display:grid;place-items:center;font-size:1.5rem;font-weight:900;transform:rotate(-12deg);animation:stamp .5s ease-out}
+.big-stars{font-size:3rem;color:var(--sun);letter-spacing:6px}
+.stat-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.review{display:grid;gap:12px;text-align:left;width:100%;margin-top:6px}
+.rv{background:var(--paper);border:3px solid var(--line);border-radius:18px;padding:12px 16px;min-width:0}
+.rv.x{border-color:var(--coral)}.rv.o{border-color:var(--leaf)}
+.rv .qtext{font-size:1.1rem;margin:2px 0}
+.rv .vis{transform-origin:top center}
+.rv .vis-svg{width:min(100%,180px)}.rv .vis-svg.wide{width:min(100%,360px)}
+.rv .exp{font-size:.98rem;color:var(--muted)}
+.mark{font-weight:900;font-size:1.4rem}
+.mark.o{color:var(--leaf)}.mark.x{color:var(--coral)}
+
+/* 試卷設定 */
+.exam-box{display:grid;gap:14px;background:var(--paper);border:3px solid var(--ink);border-radius:24px;padding:20px;box-shadow:0 8px 0 var(--ink)}
+.exam-box label{font-weight:700}
+.field{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.field input{font:inherit;font-family:var(--font-num);font-size:1.4rem;font-weight:800;width:150px;border:3px solid var(--line);border-radius:14px;padding:6px 12px;background:var(--bg);color:var(--ink)}
+.paper-lines{background:repeating-linear-gradient(var(--paper) 0 34px,var(--line) 34px 36px);border-radius:12px;padding:10px 14px}
+
+/* 貼紙簿 */
+.album{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+.slot{aspect-ratio:1;max-width:100%;border-radius:18px;border:3px dashed var(--line);display:grid;place-items:center;font-size:2.6rem;background:var(--paper)}
+.slot.have{border-style:solid;border-color:var(--sun);background:var(--sun-soft);animation:pop .4s}
+.slot.empty{color:var(--line);font-family:var(--font-num);font-weight:800}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 20px;border-radius:999px;font-weight:700;z-index:50;max-width:calc(100% - 32px);text-align:center}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:40;width:100%;height:100%}
+
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@keyframes stamp{0%{transform:scale(2.2) rotate(-12deg);opacity:0}100%{transform:scale(1) rotate(-12deg);opacity:1}}
+@keyframes pop{0%{transform:scale(.4)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.mascot{animation:bob 2.4s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+
+@media (max-width:620px){
+  body{font-size:17px}
+  .hero{grid-template-columns:1fr;justify-items:center;text-align:center}
+  .hero .mascot{width:110px;height:110px}
+  .bubble::before{display:none}
+  .modes{grid-template-columns:1fr}
+  .stage:nth-child(n){margin-left:0}
+  .stage:nth-child(4n+2),.stage:nth-child(4n){margin-left:8%}
+  .keypad{grid-template-columns:repeat(4,minmax(52px,64px))}
+  .mascot-row{width:64px;height:64px;top:-40px}
+  .card{padding:16px}
+  .choice{font-size:1.2rem}
+}
+</style>
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header class="top">
+    <button class="brand" id="brand" aria-label="回首頁">
+      <svg class="mini" viewBox="0 0 120 120" aria-hidden="true"><use href="#dragon"/></svg>
+      <b>算數小島</b>
+    </button>
+    <span class="pill" title="金幣"><span aria-hidden="true">🪙</span><span class="num" id="coins">0</span></span>
+    <span class="pill" title="星星"><span aria-hidden="true">⭐</span><span class="num" id="starsTotal">0</span></span>
+    <button class="icon-btn" id="soundBtn" aria-label="音效開關">🔊</button>
+  </header>
+
+  <!-- 首頁 -->
+  <section class="screen" id="s-home">
+    <div class="hero">
+      <svg class="mascot" viewBox="0 0 120 120" aria-hidden="true"><use href="#dragon"/></svg>
+      <div style="min-width:0">
+        <h1>算數小島大冒險</h1>
+        <div class="bubble" style="margin-top:10px">我是小算龍！國小二年級的數學題目都在島上，每次出題都不一樣，一起來闖關、考試、收集貼紙吧！</div>
+      </div>
+    </div>
+    <div class="modes">
+      <button class="mode" data-go="map"><span class="mi a">🗺️</span><span><h3>闖關冒險</h3><p>10 座小島，每關 10 題，3 顆愛心。拿滿星星解鎖下一關。</p></span></button>
+      <button class="mode" data-go="exam"><span class="mi b">📝</span><span><h3>模擬考卷</h3><p>20 題、每題 5 分。交卷後打分數，附錯題訂正。</p></span></button>
+      <button class="mode" data-go="topics"><span class="mi c">🎯</span><span><h3>單元練習</h3><p>選一個單元一直練，答對連擊拿更多金幣。</p></span></button>
+      <button class="mode" data-go="timed"><span class="mi d">⚡</span><span><h3>60 秒快算</h3><p>加、減、九九乘法，看你一分鐘能答對幾題。</p></span></button>
+    </div>
+    <div class="sec-title"><h2>我的貼紙簿</h2><button class="btn ghost" data-go="album">打開貼紙簿</button></div>
+    <p class="note">答對題目賺金幣，15 枚金幣可以抽一張動物貼紙。共有 24 張等你收集！</p>
+  </section>
+
+  <!-- 地圖 -->
+  <section class="screen" id="s-map" hidden>
+    <div class="sec-title"><h2>冒險地圖</h2><button class="btn ghost" data-go="home">← 回首頁</button></div>
+    <p class="note">答錯會扣一顆愛心。剩幾顆愛心就拿幾顆星星，至少 1 顆星就能前往下一座島。</p>
+    <div class="map" id="map"></div>
+  </section>
+
+  <!-- 單元 -->
+  <section class="screen" id="s-topics" hidden>
+    <div class="sec-title"><h2>選一個單元</h2><button class="btn ghost" data-go="home">← 回首頁</button></div>
+    <div class="topic-grid" id="topicGrid"></div>
+  </section>
+
+  <!-- 考卷設定 -->
+  <section class="screen" id="s-exam" hidden>
+    <div class="sec-title"><h2>模擬考卷</h2><button class="btn ghost" data-go="home">← 回首頁</button></div>
+    <div class="exam-box">
+      <div class="paper-lines">
+        <p style="margin:0">二年級數學　隨堂測驗</p>
+        <p style="margin:0">題數：<span class="num">20</span> 題　每題 <span class="num">5</span> 分　滿分 <span class="num">100</span> 分</p>
+        <p style="margin:0">範圍：數到 1000、加減直式、九九乘法、應用題、長度、時間、錢幣、分數、圖形</p>
+      </div>
+      <p class="note" style="margin:0">每張考卷都有「考卷編號」。輸入同一個編號，就會出現一模一樣的考卷，老師和家長可以讓全班寫同一份。</p>
+      <div class="field">
+        <label for="seedInput">考卷編號</label>
+        <input id="seedInput" inputmode="numeric" maxlength="6" placeholder="例如 2468">
+        <button class="btn sky" id="seedStart">用這個編號出題</button>
+      </div>
+      <div><button class="btn" id="randomExam">隨機出一份新考卷</button></div>
+    </div>
+  </section>
+
+  <!-- 作答 -->
+  <section class="screen" id="s-play" hidden>
+    <div class="hud" id="hud"></div>
+    <div class="card" id="card">
+      <div class="mascot-row"><svg viewBox="0 0 120 120" aria-hidden="true"><use href="#dragon" id="playDragon"/></svg></div>
+      <div class="qhead"><span class="qno" id="qno"></span><span class="tag" id="qtag"></span><button class="speak" id="speakBtn" aria-label="念題目給我聽">🔈 念題目</button></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="vis" id="qvis"></div>
+      <div id="answerArea"></div>
+      <div id="fbArea"></div>
+    </div>
+    <div id="examNav"></div>
+  </section>
+
+  <!-- 結果 -->
+  <section class="screen" id="s-result" hidden>
+    <div class="result" id="resultBox"></div>
+  </section>
+
+  <!-- 貼紙簿 -->
+  <section class="screen" id="s-album" hidden>
+    <div class="sec-title"><h2>我的貼紙簿 <span class="num note" id="albumCount"></span></h2><button class="btn ghost" data-go="home">← 回首頁</button></div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px">
+      <button class="btn coral" id="drawBtn">抽一張貼紙（15 🪙）</button>
+      <span class="note" id="drawMsg">抽到重複的貼紙會退回 5 枚金幣。</span>
+    </div>
+    <div class="album" id="album"></div>
+  </section>
+</div>
+
+<!-- 吉祥物：小算龍 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="dragon">
+      <path d="M28 46 L36 20 L48 40 Z M50 34 L60 8 L70 34 Z M72 40 L84 20 L92 46 Z" fill="var(--sun)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="60" cy="72" rx="46" ry="40" fill="var(--leaf)" stroke="var(--ink)" stroke-width="3"/>
+      <ellipse cx="60" cy="86" rx="28" ry="20" fill="var(--belly)"/>
+      <circle cx="44" cy="64" r="10" fill="#FFFFFF" stroke="var(--ink)" stroke-width="2.5"/>
+      <circle cx="76" cy="64" r="10" fill="#FFFFFF" stroke="var(--ink)" stroke-width="2.5"/>
+      <circle cx="46" cy="66" r="5" fill="#1E3747"/><circle cx="78" cy="66" r="5" fill="#1E3747"/>
+      <circle cx="48" cy="64" r="1.8" fill="#FFFFFF"/><circle cx="80" cy="64" r="1.8" fill="#FFFFFF"/>
+      <ellipse cx="32" cy="80" rx="7" ry="4.5" fill="var(--coral)" opacity=".75"/>
+      <ellipse cx="88" cy="80" rx="7" ry="4.5" fill="var(--coral)" opacity=".75"/>
+      <path d="M50 82 Q60 93 70 82" fill="none" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>
+    </g>
+    <g id="dragonSad">
+      <path d="M28 46 L36 20 L48 40 Z M50 34 L60 8 L70 34 Z M72 40 L84 20 L92 46 Z" fill="var(--sun)" stroke="var(--ink)" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="60" cy="72" rx="46" ry="40" fill="var(--leaf)" stroke="var(--ink)" stroke-width="3"/>
+      <ellipse cx="60" cy="86" rx="28" ry="20" fill="var(--belly)"/>
+      <circle cx="44" cy="66" r="9" fill="#FFFFFF" stroke="var(--ink)" stroke-width="2.5"/>
+      <circle cx="76" cy="66" r="9" fill="#FFFFFF" stroke="var(--ink)" stroke-width="2.5"/>
+      <circle cx="44" cy="69" r="4.5" fill="#1E3747"/><circle cx="76" cy="69" r="4.5" fill="#1E3747"/>
+      <path d="M34 52 L52 56 M86 52 L68 56" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+      <path d="M50 90 Q60 81 70 90" fill="none" stroke="var(--ink)" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M88 60 q4 8 0 10 q-4 -2 0 -10z" fill="var(--sky)"/>
+    </g>
+  </defs>
+</svg>
+
+<script>
+/* ====================== 基本工具 ====================== */
+let rand = Math.random;                          // 可切換成「種子亂數」，讓考卷可重現
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const ri=(a,b)=>a+Math.floor(rand()*(b-a+1));
+const pick=a=>a[Math.floor(rand()*a.length)];
+const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(rand()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const $=s=>document.querySelector(s);
+const N=n=>`<b>${n}</b>`;                          // 題目中的數字加粗
+const W=['日','一','二','三','四','五','六'];
+const NAMES=['小明','小美','阿傑','小芳','志豪','雅婷','小宇','安安','佳佳','大雄','小琪','阿寶'];
+const ITEMS=[['貼紙','張'],['彈珠','顆'],['故事書','本'],['蘋果','顆'],['氣球','個'],['卡片','張'],['鉛筆','枝'],['餅乾','片'],['積木','塊'],['糖果','顆'],['橘子','顆'],['色紙','張']];
+const twoNames=()=>{const a=pick(NAMES);let b=pick(NAMES);while(b===a)b=pick(NAMES);return[a,b]};
+
+/* 建立題目物件：kind = input（數字鍵盤）或 choice（選擇題） */
+function Q(o){
+  o.ans=String(o.ans);
+  o.kind=o.kind||'input';
+  if(o.kind==='choice'){o.choices=shuffle((o.choices||numChoices(+o.ans)).map(String))}
+  return o;
+}
+/* 產生看起來合理的數字誘答選項 */
+function numChoices(ans){
+  const s=new Set([ans]);
+  const cand=shuffle([ans+1,ans-1,ans+10,ans-10,ans+2,ans-2,ans+5,ans-5,ans+100,ans-100]).filter(x=>x>=0);
+  for(const x of cand){if(s.size>=4)break;s.add(x)}
+  return [...s];
+}
+function uniqChoices(ans,pool,n=4){const s=new Set([String(ans)]);for(const x of shuffle(pool.map(String))){if(s.size>=n)break;s.add(x)}return[...s]}
+const fracHTML=(k,n)=>`<span class="frac"><span>${k}</span><span>${n}</span></span>`;
+function fmt(a){const m=/^(\d+)\/(\d+)$/.exec(a);return m?fracHTML(m[1],m[2]):a}
+const wrap12=h=>((h-1)%12+12)%12+1;
+const tf=(h,m)=>(h=wrap12(h),m===0?`${h}時整`:`${h}時${m}分`);
+
+/* ====================== 圖像產生 ====================== */
+function vert(a,b,op){
+  const w=Math.max(String(a).length,String(b).length)+1;
+  const row=s=>`<div class="row">${[...s.padStart(w,' ')].map(c=>`<span>${c===' '?'':c}</span>`).join('')}</div>`;
+  return `<div class="vert" aria-label="${a} ${op} ${b}">${row(String(a))}${row(op+String(b).padStart(w-1,' '))}<div class="bar"></div><div class="row"><span>&nbsp;</span></div></div>`;
+}
+function clockSVG(h,m){
+  const P=(deg,r)=>{const a=deg*Math.PI/180;return[(100+r*Math.sin(a)).toFixed(1),(100-r*Math.cos(a)).toFixed(1)]};
+  let s=`<svg class="vis-svg clock" viewBox="0 0 200 200" role="img" aria-label="時鐘"><circle class="cf" cx="100" cy="100" r="92"/><circle class="cr" cx="100" cy="100" r="92"/>`;
+  for(let i=0;i<60;i++){const[x1,y1]=P(i*6,i%5?83:77),[x2,y2]=P(i*6,88);s+=`<line class="sv-line" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${i%5?1.5:3.5}"/>`}
+  for(let n=1;n<=12;n++){const[x,y]=P(n*30,64);s+=`<text class="sv-text" x="${x}" y="${y}" font-size="20" text-anchor="middle" dominant-baseline="central">${n}</text>`}
+  const[hx,hy]=P((h%12+m/60)*30,44),[mx,my]=P(m*6,70);
+  s+=`<line class="hh" x1="100" y1="100" x2="${hx}" y2="${hy}"/><line class="mh" x1="100" y1="100" x2="${mx}" y2="${my}"/><circle class="sv-ink" cx="100" cy="100" r="7"/></svg>`;
+  return s;
+}
+function rulerSVG(s,e){
+  const X=c=>20+c*30;
+  let t=`<svg class="vis-svg wide" viewBox="0 0 490 130" role="img" aria-label="尺"><rect class="ruler-body" x="8" y="62" width="474" height="60" rx="6"/>`;
+  for(let i=0;i<=30;i++){const x=20+i*15;t+=`<line class="sv-line" x1="${x}" y1="62" x2="${x}" y2="${i%2?72:80}" stroke-width="${i%2?1.5:2.5}"/>`}
+  for(let c=0;c<=15;c++)t+=`<text class="sv-text" x="${X(c)}" y="100" font-size="16" text-anchor="middle">${c}</text>`;
+  t+=`<text class="sv-text" x="470" y="116" font-size="11" text-anchor="end">公分</text>`;
+  t+=`<rect class="pencil" x="${X(s)}" y="28" width="${X(e)-X(s)-14}" height="22" rx="3"/><polygon class="pencil-tip" points="${X(e)-14},28 ${X(e)},39 ${X(e)-14},50"/>`;
+  t+=`<line class="sv-line" x1="${X(s)}" y1="24" x2="${X(s)}" y2="62" stroke-dasharray="3 3" stroke-width="1.5"/><line class="sv-line" x1="${X(e)}" y1="24" x2="${X(e)}" y2="62" stroke-dasharray="3 3" stroke-width="1.5"/></svg>`;
+  return t;
+}
+function pieSVG(n,k){
+  let s=`<svg class="vis-svg" viewBox="0 0 200 200" role="img" aria-label="圓形平分成${n}份">`;
+  for(let i=0;i<n;i++){
+    const a1=i/n*2*Math.PI-Math.PI/2,a2=(i+1)/n*2*Math.PI-Math.PI/2;
+    const p=a=>`${(100+85*Math.cos(a)).toFixed(1)} ${(100+85*Math.sin(a)).toFixed(1)}`;
+    s+=`<path class="${i<k?'sv-shade':'sv-blank'}" d="M100 100 L${p(a1)} A85 85 0 ${(a2-a1)>Math.PI?1:0} 1 ${p(a2)} Z"/>`;
+  }
+  return s+'</svg>';
+}
+function barSVG(n,k){
+  const w=300/n;let s=`<svg class="vis-svg wide" viewBox="0 0 320 90" role="img" aria-label="長條平分成${n}份">`;
+  for(let i=0;i<n;i++)s+=`<rect class="${i<k?'sv-shade':'sv-blank'}" x="${10+i*w}" y="15" width="${w}" height="60"/>`;
+  return s+'</svg>';
+}
+function polySVG(n,irregular){
+  const rot=rand()*Math.PI*2;let pts=[];
+  for(let i=0;i<n;i++){const a=rot+i/n*2*Math.PI,r=irregular?ri(55,85):75;pts.push(`${(100+r*Math.cos(a)).toFixed(1)},${(100+r*Math.sin(a)).toFixed(1)}`)}
+  return `<svg class="vis-svg" viewBox="0 0 200 200" role="img" aria-label="多邊形"><polygon class="sv-fill" points="${pts.join(' ')}"/></svg>`;
+}
+function moneyHTML(list){
+  return `<div class="coins">${list.map(v=>v>=100?`<span class="bill ${v===500?'b500':v===1000?'b1000':''}">${v}元</span>`:`<span class="coin c${v}">${v}</span>`).join('')}</div>`;
+}
+const FOODS=['🍎','🍓','🍩','🍪','🐟','🌸','⚽','🍙','🥕','🧁','🍊','🐣'];
+function groupsHTML(g,k,e){return `<div class="groups">${Array.from({length:g},()=>`<div class="grp">${e.repeat(k)}</div>`).join('')}</div>`}
+
+/* ====================== 題庫產生器（每次隨機組題） ====================== */
+const T={};
+
+/* 1. 數到 1000：位值、比大小、數列、單雙數 */
+T.num={name:'數到1000',icon:'🔢',gen(){
+  const t=ri(0,8);
+  if(t===0){const n=ri(101,999),pos=pick(['百','十','個']);const d=pos==='百'?Math.floor(n/100):pos==='十'?Math.floor(n/10)%10:n%10;
+    return Q({text:`${N(n)} 的「${pos}位」數字是多少？`,ans:d,exp:`${n} = ${Math.floor(n/100)} 個百、${Math.floor(n/10)%10} 個十、${n%10} 個一。`})}
+  if(t===1){const h=ri(1,9),te=ri(0,9),o=ri(0,9);
+    return Q({text:`${N(h)} 個百、${N(te)} 個十、${N(o)} 個一，合起來是多少？`,ans:h*100+te*10+o,exp:`${h*100} + ${te*10} + ${o} = ${h*100+te*10+o}`})}
+  if(t===2){const a=ri(100,989);let b=a+pick([-100,-10,-1,1,10,100,0,9,-9]);b=Math.min(999,Math.max(100,b));
+    const ans=a>b?'>':a<b?'<':'=';
+    return Q({text:`${N(a)} ○ ${N(b)}，○ 裡要填什麼？`,ans,kind:'choice',choices:['>','<','='],exp:`先比百位，再比十位，最後比個位。${a} ${ans} ${b}`})}
+  if(t===3){const step=pick([2,5,10,50,100,20]);const up=rand()<.6;const start=up?ri(0,999-4*step):ri(4*step,999);
+    const seq=[0,1,2,3].map(i=>start+(up?1:-1)*i*step);const ans=start+(up?1:-1)*4*step;
+    return Q({text:`找規律：${seq.map(N).join('、')}、□，□ 是多少？`,ans,exp:`每次${up?'多':'少'} ${step}，所以 ${seq[3]} ${up?'+':'−'} ${step} = ${ans}`})}
+  if(t===4){let d=shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0,3);const big=rand()<.5;
+    const s=[...d].sort((x,y)=>y-x);let ans;
+    if(big)ans=+s.join('');else{const a=[...d].sort((x,y)=>x-y);if(a[0]===0){const i=a.findIndex(x=>x>0);[a[0],a[i]]=[a[i],a[0]]}ans=+a.join('')}
+    return Q({text:`用數字卡 ${d.map(N).join('、')} 各用一次，排出${big?'最大':'最小'}的三位數是多少？`,ans,exp:big?'把最大的數字放在百位，依序排下來。':'百位不能是 0，把最小（不是 0）的數字放百位，再由小排到大。'})}
+  if(t===5){const odd=rand()<.5;const pool=[];while(pool.length<3){const x=ri(10,999);if((x%2===1)!==odd&&!pool.includes(x))pool.push(x)}let a;do{a=ri(10,999)}while((a%2===1)!==odd);
+    return Q({text:`下面哪一個是${odd?'單數':'雙數'}？`,ans:a,kind:'choice',choices:[a,...pool],exp:`看個位數字：個位是 1、3、5、7、9 的是單數，0、2、4、6、8 是雙數。`})}
+  if(t===6){const d=pick([1,10,100]),more=rand()<.5;const n=more?ri(100,999-d):ri(100+d,999);const ans=more?n+d:n-d;
+    return Q({text:`比 ${N(n)} ${more?'多':'少'} ${N(d)} 的數是多少？`,ans,exp:`${n} ${more?'+':'−'} ${d} = ${ans}`})}
+  if(t===7){const n=ri(100,999);const h=Math.floor(n/100),te=Math.floor(n/10)%10;
+    return Q({text:`${N(n)} 裡面一共有幾個「十」？`,ans:h*10+te,exp:`${h} 個百是 ${h*10} 個十，再加上 ${te} 個十，共 ${h*10+te} 個十。`})}
+  const a=ri(0,8)*100+ri(0,9)*10+ri(0,9)+100;const opts=[a,a+ri(1,40),a-ri(1,40),a+ri(41,120)].filter(x=>x>0&&x<1000);const big=rand()<.5;const ans=big?Math.max(...opts):Math.min(...opts);
+  return Q({text:`下面哪一個數${big?'最大':'最小'}？`,ans,kind:'choice',choices:[...new Set(opts)].length===4?opts:numChoices(ans),exp:`從百位開始一位一位比較。`});
+}};
+/* 修正：選項重複時重新計算正確答案 */
+(function(){const g=T.num.gen;T.num.gen=function(){let q;do{q=g()}while(q.kind==='choice'&&!q.choices.includes(q.ans));return q}})();
+
+/* 2. 加法（含進位直式） */
+T.add={name:'加法直式',icon:'➕',gen(){
+  const t=ri(0,3);let a,b;
+  if(t===0){a=ri(15,89);b=ri(11,99-a+ri(0,60));if(a+b>199)b=ri(11,60)}
+  else if(t===1){a=ri(100,899);b=ri(11,99)}
+  else{a=ri(100,700);b=ri(100,999-a)}
+  if(b<1)b=ri(5,30);
+  const s=a+b;
+  if(rand()<.25)return Q({text:`${N(a)} + ${N(b)} = ？`,ans:s,kind:'choice',say:`${a}加${b}等於多少`,exp:`個位相加，滿十進一位到十位；十位滿十再進到百位。`});
+  return Q({text:'算算看：',vis:vert(a,b,'+'),ans:s,say:`${a}加${b}等於多少`,exp:`${a} + ${b} = ${s}。記得進位要加上去喔！`});
+}};
+
+/* 3. 減法（含退位、中間有 0） */
+T.sub={name:'減法直式',icon:'➖',gen(){
+  const t=ri(0,3);let a,b;
+  if(t===0){a=ri(30,99);b=ri(11,a-1)}
+  else if(t===1){a=ri(2,9)*100+pick([0,ri(1,9)]);b=ri(11,a-1);if(b>a)b=ri(10,a-1)}
+  else if(t===2){a=ri(200,999);b=ri(100,a-1)}
+  else{a=ri(1,9)*100+ri(0,99);b=ri(5,99);if(b>=a)b=ri(1,a-1)}
+  const d=a-b;
+  if(rand()<.25)return Q({text:`${N(a)} − ${N(b)} = ？`,ans:d,kind:'choice',say:`${a}減${b}等於多少`,exp:`個位不夠減，向十位借 1 當 10；十位是 0 就先向百位借。`});
+  return Q({text:'算算看：',vis:vert(a,b,'−'),ans:d,say:`${a}減${b}等於多少`,exp:`${a} − ${b} = ${d}。驗算：${d} + ${b} = ${a}`});
+}};
+
+/* 4. 填 □（加減乘的逆向思考） */
+T.box={name:'填填看 □',icon:'🔲',gen(){
+  const t=ri(0,5);
+  if(t===0){const x=ri(10,500),a=ri(10,400);return Q({text:`□ + ${N(a)} = ${N(x+a)}，□ 是多少？`,ans:x,exp:`□ = ${x+a} − ${a} = ${x}`})}
+  if(t===1){const x=ri(10,500),a=ri(10,400);return Q({text:`${N(a)} + □ = ${N(x+a)}，□ 是多少？`,ans:x,exp:`□ = ${x+a} − ${a} = ${x}`})}
+  if(t===2){const x=ri(50,900),a=ri(10,x-5);return Q({text:`□ − ${N(a)} = ${N(x-a)}，□ 是多少？`,ans:x,exp:`□ = ${x-a} + ${a} = ${x}`})}
+  if(t===3){const a=ri(100,999),x=ri(10,a-5);return Q({text:`${N(a)} − □ = ${N(a-x)}，□ 是多少？`,ans:x,exp:`□ = ${a} − ${a-x} = ${x}`})}
+  if(t===4){const a=ri(2,9),x=ri(1,9);return Q({text:`${N(a)} × □ = ${N(a*x)}，□ 是多少？`,ans:x,exp:`想想 ${a} 的乘法：${a} × ${x} = ${a*x}`})}
+  const a=ri(2,9),x=ri(1,9);return Q({text:`□ × ${N(a)} = ${N(a*x)}，□ 是多少？`,ans:x,exp:`${x} × ${a} = ${a*x}`});
+}};
+
+/* 5. 九九乘法 */
+function genMul(tables){
+  const a=pick(tables),b=ri(0,9)===0&&rand()<.3?pick([0,1]):ri(2,9);const p=a*b;const t=ri(0,6);
+  if(t<=2)return Q({text:`${N(a)} × ${N(b)} = ？`,ans:p,kind:t===2?'choice':'input',exp:`${a} 的乘法：${a} × ${b} = ${p}${b===0?'。任何數乘以 0 都是 0。':''}`});
+  if(t===3)return Q({text:`${N(b)} 個 ${N(a)} 是多少？`,ans:p,exp:`${b} 個 ${a} 寫成 ${a} × ${b} = ${p}`});
+  if(t===4){const n=Math.max(b,2);return Q({text:`${Array(n).fill(N(a)).join(' + ')} 可以寫成哪一個乘法算式？`,ans:`${a} × ${n}`,kind:'choice',choices:uniqChoices(`${a} × ${n}`,[`${a} + ${n}`,`${n} × ${n+1}`,`${a} × ${n+1}`,`${a+1} × ${n}`,`${a} × ${n-1}`]),exp:`${n} 個 ${a} 相加，就是 ${a} × ${n}`})}
+  if(t===5){const bb=Math.max(b,2);return Q({text:`${N(a)} × ${N(bb)} 和下面哪一個的答案一樣？`,ans:`${bb} × ${a}`,kind:'choice',choices:uniqChoices(`${bb} × ${a}`,[`${a} + ${bb}`,`${a} × ${bb+1}`,`${bb+1} × ${bb}`,`${a+1} × ${bb}`,`${bb} × ${a-1}`]),exp:`乘法交換位置答案不變：${a} × ${bb} = ${bb} × ${a} = ${a*bb}`})}
+  const bb=Math.max(b,2);return Q({text:`${N(a)} 的 ${N(bb)} 倍是多少？`,ans:a*bb,exp:`${a} 的 ${bb} 倍 = ${a} × ${bb} = ${a*bb}`});
+}
+T.mul={name:'九九乘法',icon:'✖️',gen:()=>genMul([2,3,4,5,6,7,8,9])};
+
+/* 6. 乘法圖（看圖列式） */
+T.mulpic={name:'看圖學乘法',icon:'🍎',gen(){
+  const g=ri(2,6),k=ri(2,5),e=pick(FOODS);
+  if(rand()<.5)return Q({text:`每一圈有 ${N(k)} 個，共有 ${N(g)} 圈，一共有幾個？`,vis:groupsHTML(g,k,e),ans:g*k,exp:`${k} 個一圈，${g} 圈 → ${k} × ${g} = ${g*k}`});
+  return Q({text:'這張圖可以用哪一個算式表示？',vis:groupsHTML(g,k,e),ans:`${k} × ${g}`,kind:'choice',choices:uniqChoices(`${k} × ${g}`,[`${k} + ${g}`,`${k} × ${g+1}`,`${g+k} × 2`,`${k+1} × ${g}`,`${k} − ${g}`]),exp:`每圈 ${k} 個，有 ${g} 圈，寫成 ${k} × ${g}（${k} 的 ${g} 倍）。`});
+}};
+
+/* 7. 加減應用題 */
+T.word={name:'加減應用題',icon:'🧺',gen(){
+  const[it,u]=pick(ITEMS),[A,B]=twoNames();const t=ri(0,9);let a=ri(20,480),b=ri(10,400);
+  if(a+b>999)b=ri(10,999-a);
+  switch(t){
+    case 0:return Q({text:`${A}有 ${N(a)} ${u}${it}，${B}有 ${N(b)} ${u}，兩人一共有幾${u}？`,ans:a+b,exp:`合起來用加法：${a} + ${b} = ${a+b}`});
+    case 1:return Q({text:`${A}原本有 ${N(a)} ${u}${it}，又買了 ${N(b)} ${u}，現在有幾${u}？`,ans:a+b,exp:`變多了用加法：${a} + ${b} = ${a+b}`});
+    case 2:{if(b>=a)[a,b]=[b+ri(5,50),a];return Q({text:`${A}有 ${N(a)} ${u}${it}，送給${B} ${N(b)} ${u}後，還剩幾${u}？`,ans:a-b,exp:`送出去變少，用減法：${a} − ${b} = ${a-b}`})}
+    case 3:{if(b>=a)[a,b]=[b+ri(5,50),a];return Q({text:`${A}有 ${N(a)} ${u}${it}，${B}有 ${N(b)} ${u}，${A}比${B}多幾${u}？`,ans:a-b,exp:`比多少用減法：${a} − ${b} = ${a-b}`})}
+    case 4:{const d=ri(5,99);a=Math.min(a,999-d);return Q({text:`${A}有 ${N(a)} ${u}${it}，${B}比${A}多 ${N(d)} ${u}，${B}有幾${u}？`,ans:a+d,exp:`比${A}多，用加法：${a} + ${d} = ${a+d}`})}
+    case 5:{const d=ri(5,Math.min(99,a-1));return Q({text:`${A}有 ${N(a)} ${u}${it}，${B}比${A}少 ${N(d)} ${u}，${B}有幾${u}？`,ans:a-d,exp:`比${A}少，用減法：${a} − ${d} = ${a-d}`})}
+    case 6:return Q({text:`${A}送出 ${N(b)} ${u}${it}後，還剩下 ${N(a)} ${u}，${A}原來有幾${u}？`,ans:a+b,exp:`原來的 = 送出的 + 剩下的：${b} + ${a} = ${a+b}`});
+    case 7:return Q({text:`${A}有一些${it}，又買了 ${N(b)} ${u}後，一共有 ${N(a+b)} ${u}，原來有幾${u}？`,ans:a,exp:`原來的 = 全部 − 又買的：${a+b} − ${b} = ${a}`});
+    case 8:{const x=ri(100,500),y=ri(10,x-10),z=ri(10,300);return Q({text:`${A}有 ${N(x)} ${u}${it}，給了${B} ${N(y)} ${u}，又買了 ${N(z)} ${u}，現在有幾${u}？`,ans:x-y+z,exp:`先減再加：${x} − ${y} = ${x-y}，${x-y} + ${z} = ${x-y+z}`})}
+    default:{const p=ri(20,45),down=ri(3,p-5),up=ri(2,20);return Q({text:`公車上有 ${N(p)} 人，到站後下車 ${N(down)} 人，又上車 ${N(up)} 人，現在車上有幾人？`,ans:p-down+up,exp:`${p} − ${down} + ${up} = ${p-down+up}`})}
+  }
+}};
+
+/* 8. 乘法應用題 */
+T.mulword={name:'乘法應用題',icon:'🛒',gen(){
+  const[A]=twoNames();const b=ri(2,9);const a=ri(2,9);const t=ri(0,12);
+  const L=[
+    ()=>Q({text:`每盒有 ${N(a)} 個布丁，${N(b)} 盒共有幾個布丁？`,ans:a*b,exp:`${a} × ${b} = ${a*b}`}),
+    ()=>Q({text:`一隻章魚有 ${N(8)} 隻腳，${N(b)} 隻章魚共有幾隻腳？`,ans:8*b,exp:`8 × ${b} = ${8*b}`}),
+    ()=>Q({text:`一輛三輪車有 ${N(3)} 個輪子，${N(b)} 輛三輪車共有幾個輪子？`,ans:3*b,exp:`3 × ${b} = ${3*b}`}),
+    ()=>Q({text:`一個星期有 ${N(7)} 天，${N(b)} 個星期共有幾天？`,ans:7*b,exp:`7 × ${b} = ${7*b}`}),
+    ()=>Q({text:`一枝鉛筆 ${N(a)} 元，${A}買了 ${N(b)} 枝，要付幾元？`,ans:a*b,exp:`${a} × ${b} = ${a*b}`}),
+    ()=>Q({text:`教室每排坐 ${N(a)} 個人，坐滿了 ${N(b)} 排，一共坐了幾個人？`,ans:a*b,exp:`${a} × ${b} = ${a*b}`}),
+    ()=>Q({text:`一隻手有 ${N(5)} 根手指，${N(b)} 隻手共有幾根手指？`,ans:5*b,exp:`5 × ${b} = ${5*b}`}),
+    ()=>{const c=ri(1,a*b-1);return Q({text:`每包有 ${N(a)} 顆糖，${A}買了 ${N(b)} 包，吃掉 ${N(c)} 顆，還剩幾顆？`,ans:a*b-c,exp:`先算全部：${a} × ${b} = ${a*b}，再減掉：${a*b} − ${c} = ${a*b-c}`})},
+    ()=>{const c=ri(1,9);return Q({text:`每盤放 ${N(a)} 個水餃，放了 ${N(b)} 盤，還多出 ${N(c)} 個，一共有幾個水餃？`,ans:a*b+c,exp:`${a} × ${b} = ${a*b}，${a*b} + ${c} = ${a*b+c}`})},
+    ()=>Q({text:`一張桌子有 ${N(4)} 隻腳，${N(b)} 張桌子共有幾隻腳？`,ans:4*b,exp:`4 × ${b} = ${4*b}`}),
+    ()=>Q({text:`正方形 4 條邊一樣長，每邊長 ${N(a)} 公分，4 條邊合起來長幾公分？`,ans:4*a,unit:'公分',exp:`${a} × 4 = ${4*a}`}),
+    ()=>Q({text:`一隻螞蟻有 ${N(6)} 隻腳，${N(b)} 隻螞蟻共有幾隻腳？`,ans:6*b,exp:`6 × ${b} = ${6*b}`}),
+    ()=>Q({text:`${A}每天看 ${N(a)} 頁故事書，${N(b)} 天一共看了幾頁？`,ans:a*b,exp:`${a} × ${b} = ${a*b}`}),
+  ];
+  return L[t]();
+}};
+
+/* 9. 長度：公分、公尺、量尺 */
+const UNIT_BANK=[['一枝鉛筆大約長 15','公分'],['教室的門大約高 2','公尺'],['一隻螞蟻大約長 1','公分'],['游泳池大約長 25','公尺'],['數學課本大約寬 20','公分'],['一棵大樹大約高 8','公尺'],['一塊橡皮擦大約長 4','公分'],['籃球場大約長 28','公尺'],['小朋友的手掌大約長 13','公分'],['學校走廊大約長 50','公尺'],['一根手指大約寬 1','公分'],['一輛公車大約長 12','公尺']];
+T.len={name:'長度',icon:'📏',gen(){
+  const t=ri(0,6);
+  if(t===0){const a=ri(1,9);return Q({text:`${N(a)} 公尺 = □ 公分`,ans:a*100,unit:'公分',exp:`1 公尺 = 100 公分，${a} 公尺 = ${a*100} 公分`})}
+  if(t===1){const a=ri(1,8),c=ri(1,99);return Q({text:`${N(a)} 公尺 ${N(c)} 公分 = □ 公分`,ans:a*100+c,unit:'公分',exp:`${a*100} + ${c} = ${a*100+c}`})}
+  if(t===2){const m=ri(1,9),c=ri(1,99),n=m*100+c;const ch=uniqChoices(`${m}公尺${c}公分`,[`${c}公尺${m}公分`,`${m+1}公尺${c}公分`,`${m}公尺${c+10>99?c-10:c+10}公分`,`${n}公尺`]);
+    return Q({text:`${N(n)} 公分是幾公尺幾公分？`,ans:`${m}公尺${c}公分`,kind:'choice',choices:ch,exp:`100 公分 = 1 公尺，${n} 公分 = ${m} 公尺 ${c} 公分`})}
+  if(t===3){const len=ri(2,9),s=pick([0,0,ri(1,15-len)]);return Q({text:s===0?'這枝鉛筆長幾公分？':`這枝鉛筆從 ${N(s)} 量到 ${N(s+len)}，長幾公分？`,vis:rulerSVG(s,s+len),ans:len,unit:'公分',exp:s===0?`從 0 量到 ${len}，長 ${len} 公分。`:`${s+len} − ${s} = ${len}，不是從 0 開始要用減的。`})}
+  if(t===4){const[s,u]=pick(UNIT_BANK);return Q({text:`${s} ___，___ 裡要填什麼單位？`,ans:u,kind:'choice',choices:['公分','公尺'],exp:`想一想實際的大小：1 公分大約是一根手指寬，1 公尺大約是一大步多一點。`})}
+  if(t===5){const a=ri(20,80),b=ri(10,90);return Q({text:`一條紅繩子長 ${N(a)} 公分，接上一條 ${N(b)} 公分的藍繩子（接頭不計），一共長幾公分？`,ans:a+b,unit:'公分',exp:`${a} + ${b} = ${a+b}`})}
+  const a=ri(1,4),b=ri(50,450);const ans=a*100>b?`${a} 公尺`:a*100<b?`${b} 公分`:'一樣長';
+  return Q({text:`${N(a)} 公尺和 ${N(b)} 公分，哪一個比較長？`,ans,kind:'choice',choices:[`${a} 公尺`,`${b} 公分`,'一樣長'],exp:`${a} 公尺 = ${a*100} 公分，再和 ${b} 公分比。`});
+}};
+
+/* 10. 時間：看時鐘、經過時間、時間單位 */
+const AMPM=[['吃早餐','上午'],['放學回家吃點心','下午'],['睡午覺起來','下午'],['升旗典禮','上午'],['看到月亮準備睡覺','晚上'],['第一節上課','上午'],['吃晚餐','晚上'],['吃完午餐去散步','下午']];
+T.time={name:'時間',icon:'⏰',gen(){
+  const t=ri(0,5);
+  if(t<=1){const h=ri(1,12),m=ri(0,11)*5;const k=m/5;
+    const wr=[tf(h===12?1:h+1,m),tf(h===1?12:h-1,m)];if(k!==m&&k>0)wr.push(tf(h,k));if(m>0)wr.push(tf(k||12,h*5%60));wr.push(tf(h,(m+30)%60));
+    return Q({text:'時鐘上是幾時幾分？',vis:clockSVG(h,m),ans:tf(h,m),kind:'choice',choices:uniqChoices(tf(h,m),wr),exp:`短針（紅色）指時，長針（藍色）指分。長針指著 ${k||12}，是 ${m} 分。`})}
+  if(t===2){const f=pick([['1 小時 = □ 分鐘',60,'分鐘'],['1 天 = □ 小時',24,'小時'],['2 小時 = □ 分鐘',120,'分鐘'],['半小時 = □ 分鐘',30,'分鐘'],['1 小時 30 分鐘 = □ 分鐘',90,'分鐘'],['120 分鐘 = □ 小時',2,'小時']]);
+    return Q({text:f[0],ans:f[1],unit:f[2],exp:'1 天 = 24 小時，1 小時 = 60 分鐘。'})}
+  if(t===3){const h=ri(1,10),m=ri(0,11)*5,d=pick([10,15,20,25,30,35,40,45,50,55,60,90]);let tot=h*60+m+d;const H=Math.floor(tot/60),M=tot%60;
+    const ans=tf(H,M);const wr=[tf(H,(M+5)%60),tf(H+1,M),tf(H===1?12:H-1,M),tf(h,(m+d)%60),tf(H,(M+55)%60)];
+    return Q({text:`現在是 ${tf(h,m)}，再過 ${N(d)} 分鐘是幾時幾分？`,vis:clockSVG(h,m),ans,kind:'choice',choices:uniqChoices(ans,wr),exp:`${tf(h,m)} 加上 ${d} 分鐘，滿 60 分就進 1 小時 → ${ans}`})}
+  if(t===4){const h=ri(7,10),d=ri(1,5);return Q({text:`從上午 ${N(h)} 時整到 ${h+d>12?'下午 '+N(h+d-12):'上午 '+N(h+d)} 時整，經過了幾小時？`,ans:d,unit:'小時',exp:`${h} 時到 ${h+d} 時，經過 ${d} 小時。`})}
+  const[e,a]=pick(AMPM);return Q({text:`「${e}」通常是在什麼時候？`,ans:a,kind:'choice',choices:['上午','下午','晚上'],exp:'中午 12 時以前是上午，之後是下午，天黑之後是晚上。'});
+}};
+
+/* 11. 錢幣：數錢、找錢、換錢 */
+T.money={name:'認識錢幣',icon:'💰',gen(){
+  const t=ri(0,4);
+  if(t<=1){const list=[];const n50=ri(0,2),n10=ri(0,5),n5=ri(0,3),n1=ri(0,5),n100=rand()<.35?ri(1,3):0;
+    for(let i=0;i<n100;i++)list.push(100);for(let i=0;i<n50;i++)list.push(50);for(let i=0;i<n10;i++)list.push(10);for(let i=0;i<n5;i++)list.push(5);for(let i=0;i<n1;i++)list.push(1);
+    if(list.length<3)list.push(10,5,1);const s=list.reduce((x,y)=>x+y,0);
+    return Q({text:'一共是幾元？',vis:moneyHTML(list),ans:s,unit:'元',exp:'從大的錢開始數，再一個一個往上加。'})}
+  if(t===2){const[A]=twoNames();const pay=pick([50,100,100,500]);const price=ri(Math.floor(pay*0.2),pay-1);const[it]=pick([['筆記本'],['玩具車'],['果汁'],['繪本'],['鉛筆盒'],['跳繩']]);
+    return Q({text:`${A}拿 ${N(pay)} 元買一個 ${N(price)} 元的${it}，可以找回幾元？`,ans:pay-price,unit:'元',exp:`${pay} − ${price} = ${pay-price}`})}
+  if(t===3){const f=pick([['1 個 50 元硬幣可以換幾個 10 元硬幣？',5,'個'],['1 張 100 元鈔票可以換幾個 10 元硬幣？',10,'個'],['1 個 10 元硬幣可以換幾個 5 元硬幣？',2,'個'],['1 張 100 元鈔票可以換幾個 50 元硬幣？',2,'個'],['1 張 500 元鈔票可以換幾張 100 元鈔票？',5,'張'],['1 張 1000 元鈔票可以換幾張 100 元鈔票？',10,'張'],['1 個 50 元硬幣可以換幾個 5 元硬幣？',10,'個']]);
+    return Q({text:f[0],ans:f[1],unit:f[2],exp:'想一想：幾個小的錢合起來等於一個大的錢？'})}
+  const n=ri(12,99);const c50=Math.floor(n/50),r1=n%50,c10=Math.floor(r1/10),r2=r1%10,c5=Math.floor(r2/5),c1=r2%5;const tot=c50+c10+c5+c1;
+  return Q({text:`用 50 元、10 元、5 元、1 元硬幣湊出 ${N(n)} 元，最少要幾個硬幣？`,ans:tot,unit:'個',exp:`先用大的：${c50} 個 50 元、${c10} 個 10 元、${c5} 個 5 元、${c1} 個 1 元，共 ${tot} 個。`});
+}};
+
+/* 12. 分數（平分、幾分之幾） */
+T.frac={name:'分數',icon:'🍕',gen(){
+  const t=ri(0,4);const n=pick([2,3,4,5,6,8]);const k=ri(1,n-1);
+  const wrong=[`${n-k===k?k+1:n-k}/${n}`,`${k}/${n+1}`,`1/${n}`,`${k}/${n-1>1?n-1:n+2}`,`${n}/${n}`];
+  if(t<=1)return Q({text:'塗顏色的部分是全部的幾分之幾？',vis:t===0?pieSVG(n,k):barSVG(n,k),ans:`${k}/${n}`,kind:'choice',choices:uniqChoices(`${k}/${n}`,wrong),exp:`平分成 ${n} 份（分母 ${n}），塗了 ${k} 份（分子 ${k}），是 ${n} 分之 ${k}。`});
+  if(t===2)return Q({text:`一個蛋糕平分成 ${N(n)} 塊，吃掉 ${N(k)} 塊，吃掉的是整個蛋糕的幾分之幾？`,ans:`${k}/${n}`,kind:'choice',choices:uniqChoices(`${k}/${n}`,wrong),exp:`平分成 ${n} 塊，吃了 ${k} 塊 → ${n} 分之 ${k}`});
+  if(t===3)return Q({text:`${N(k)} 個 ${fracHTML(1,n)} 合起來是多少？`,ans:`${k}/${n}`,kind:'choice',choices:uniqChoices(`${k}/${n}`,wrong),exp:`${k} 個 ${n} 分之 1 就是 ${n} 分之 ${k}。`});
+  let a=pick([2,3,4,5,6,8]),b=pick([2,3,4,5,6,8]);while(b===a)b=pick([2,3,4,5,6,8]);const ans=`1/${Math.min(a,b)}`;
+  return Q({text:`同樣大的披薩，${fracHTML(1,a)} 個和 ${fracHTML(1,b)} 個，哪一個比較多？`,ans,kind:'choice',choices:[`1/${a}`,`1/${b}`],exp:`分的份數越少，每一份越大，所以 ${Math.min(a,b)} 分之 1 比較多。`});
+}};
+
+/* 13. 平面與立體圖形 */
+const SHAPE_NAME={3:'三角形',4:'四邊形',5:'五邊形',6:'六邊形'};
+const SHAPE_BANK=[['正方形有幾條邊？',4],['三角形有幾個角？',3],['圓形有幾個角？',0],['正方體有幾個面？',6],['長方形有幾個角？',4],['正方體有幾個頂點？',8],['五邊形有幾條邊？',5],['三角形有幾個頂點？',3]];
+T.shape={name:'圖形',icon:'🔷',gen(){
+  const t=ri(0,3);
+  if(t===0){const n=ri(3,8);const w=pick(['條邊','個角']);return Q({text:`這個圖形有幾${w}？`,vis:polySVG(n,rand()<.5),ans:n,exp:`沿著圖形數一圈：有 ${n} 條邊，也有 ${n} 個角。`})}
+  if(t===1){const n=ri(3,6);return Q({text:'這個圖形叫什麼名字？',vis:polySVG(n,rand()<.6),ans:SHAPE_NAME[n],kind:'choice',choices:['三角形','四邊形','五邊形','六邊形'],exp:`有 ${n} 條邊，叫做${SHAPE_NAME[n]}。`})}
+  if(t===2){const[q,a]=pick(SHAPE_BANK);return Q({text:q,ans:a,exp:'可以拿身邊的東西摸摸看、數數看。'})}
+  const f=pick([['哪一個圖形 4 條邊都一樣長，4 個角都是直角？','正方形',['正方形','長方形','三角形','圓形']],['哪一個圖形沒有邊也沒有角？','圓形',['圓形','三角形','正方形','五邊形']],['哪一個形狀的東西可以滾來滾去？','球',['球','正方體','長方體','三角錐']],['骰子是哪一種形狀？','正方體',['正方體','長方體','球','圓柱']]]);
+  return Q({text:f[0],ans:f[1],kind:'choice',choices:f[2],exp:'想一想它們的邊、角和面。'});
+}};
+
+/* 14. 日曆與星期 */
+const BIG=[1,3,5,7,8,10,12],SMALL=[4,6,9,11];
+T.cal={name:'日曆',icon:'📅',gen(){
+  const t=ri(0,4);
+  if(t<=1){const w=ri(0,6),n=ri(2,20);const ans=`星期${W[(w+n)%7]}`;return Q({text:`今天是星期${W[w]}，再過 ${N(n)} 天是星期幾？`,ans,kind:'choice',choices:uniqChoices(ans,W.map(x=>'星期'+x)),exp:`一星期有 7 天，每過 7 天又回到同一天。${n} 天 = ${Math.floor(n/7)} 個星期又 ${n%7} 天。`})}
+  if(t===2){const b=ri(2,9);return rand()<.5?Q({text:`${N(b)} 個星期 = □ 天`,ans:7*b,unit:'天',exp:`7 × ${b} = ${7*b}`}):Q({text:`${N(7*b)} 天 = □ 個星期`,ans:b,unit:'星期',exp:`7 × ${b} = ${7*b}，所以是 ${b} 個星期。`})}
+  if(t===3){const m=ri(1,12),d=ri(1,18),n=ri(3,10);return Q({text:`${N(m)} 月 ${N(d)} 日再過 ${N(n)} 天，是 ${N(m)} 月幾日？`,ans:d+n,unit:'日',exp:`${d} + ${n} = ${d+n}`})}
+  if(rand()<.5){const a=pick(BIG);return Q({text:'下面哪一個月有 31 天？',ans:`${a}月`,kind:'choice',choices:[`${a}月`,...shuffle([...SMALL,2]).slice(0,3).map(x=>x+'月')],exp:'31 天的大月：1、3、5、7、8、10、12 月。'})}
+  const f=pick([['一年有幾個月？',12],['一個星期有幾天？',7],['4 月有幾天？',30],['12 月有幾天？',31]]);return Q({text:f[0],ans:f[1],exp:'記住：大月 31 天，小月 30 天，2 月比較特別。'});
+}};
+
+/* 15. 找規律 */
+const PAT=['🔴','🔵','🟡','🟢','⭐','🔺','💜','🍎','🍌','🐱','🐶','🌙'];
+T.pattern={name:'找規律',icon:'🧩',gen(){
+  if(rand()<.6){const kinds=[[0,1],[0,1,2],[0,0,1],[0,1,1],[0,1,2,2]];const p=pick(kinds);const sy=shuffle(PAT).slice(0,4);const len=p.length*2+ri(0,p.length-1);
+    const seq=Array.from({length:len},(_,i)=>sy[p[i%p.length]]);const ans=sy[p[len%p.length]];
+    return Q({text:'照著規律排，下一個是什麼？',vis:`<div class="pattern">${seq.join('')}<span class="q">？</span></div>`,ans,kind:'choice',choices:uniqChoices(ans,sy),exp:`每 ${p.length} 個一組重複：${p.map(i=>sy[i]).join('')}`})}
+  const step=pick([2,3,4,5,6,7,8,9,10]);const s=step*ri(0,4);const seq=[0,1,2,3,4].map(i=>s+i*step);const hole=ri(2,4);const ans=seq[hole];
+  return Q({text:`找規律：${seq.map((x,i)=>i===hole?'□':N(x)).join('、')}，□ 是多少？`,ans,exp:`每次多 ${step}（就像 ${step} 的乘法），□ = ${ans}`});
+}};
+
+const TOPIC_ORDER=['num','add','sub','box','mul','mulpic','word','mulword','len','time','money','frac','shape','cal','pattern'];
+
+/* ====================== 關卡設定 ====================== */
+const STAGES=[
+  {name:'數字森林',icon:'🌳',mix:['num','num','pattern']},
+  {name:'加法沙灘',icon:'🏖️',mix:['add','add','word']},
+  {name:'減法山谷',icon:'⛰️',mix:['sub','sub','box','word']},
+  {name:'乘法花園',icon:'🌻',mix:[()=>genMul([2,5,4,8]),'mulpic']},
+  {name:'乘法城堡',icon:'🏰',mix:[()=>genMul([3,6,9,7]),()=>genMul([3,6,9,7]),'box']},
+  {name:'應用題市集',icon:'🎪',mix:['word','mulword']},
+  {name:'時鐘塔',icon:'🕰️',mix:['time','time','cal']},
+  {name:'錢幣商店',icon:'🏪',mix:['money']},
+  {name:'測量工坊',icon:'🛠️',mix:['len','shape','frac']},
+  {name:'魔王火山',icon:'🌋',mix:TOPIC_ORDER,boss:true},
+];
+const genFrom=x=>typeof x==='function'?x():T[x].gen();
+/* 避免同一回合出現相同題目 */
+function makeSet(mix,n){const out=[],seen=new Set();let guard=0;while(out.length<n&&guard<500){guard++;const src=pick(mix);const q=genFrom(src);q.topic=typeof src==='string'?src:(q.topic||'mul');const key=q.text+(q.vis||'');if(seen.has(key))continue;seen.add(key);out.push(q)}return out}
+
+/* ====================== 存檔 ====================== */
+const STICKERS=['🐶','🐱','🐰','🦊','🐼','🐨','🐯','🦁','🐸','🐵','🐧','🐤','🦄','🐙','🦖','🐳','🦋','🐞','🐢','🦔','🐹','🦉','🐬','🦒'];
+let S={coins:0,stars:{},stickers:{},best:0,sound:true};
+try{const raw=localStorage.getItem('suanshu-island-v1');if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+function save(){try{localStorage.setItem('suanshu-island-v1',JSON.stringify(S))}catch(e){}refreshTop()}
+function refreshTop(){$('#coins').textContent=S.coins;$('#starsTotal').textContent=Object.values(S.stars).reduce((a,b)=>a+b,0);$('#soundBtn').textContent=S.sound?'🔊':'🔇'}
+
+/* ====================== 音效、朗讀、彩帶 ====================== */
+let AC;
+function tone(f,d,type='sine',when=0,vol=.14){if(!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime+when,o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
+const SFX={ok(){tone(660,.15,'triangle');tone(990,.28,'triangle',.1)},bad(){tone(196,.32,'square',0,.05)},win(){[523,659,784,1046].forEach((f,i)=>tone(f,.3,'triangle',i*.12))},tap(){tone(520,.05,'sine',0,.05)},coin(){tone(1250,.08,'square',0,.035);tone(1650,.14,'square',.07,.035)}};
+function sayText(q){if(q.say)return q.say;const d=document.createElement('div');d.innerHTML=q.text;return d.textContent.replace(/□/g,'框框').replace(/×/g,'乘以').replace(/−/g,'減').replace(/\+/g,'加').replace(/=/g,'等於').replace(/○/g,'圈圈').replace(/___/g,'什麼')}
+function speak(t){try{if(!('speechSynthesis' in window))return toast('這台裝置不支援朗讀');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='zh-TW';u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
+const fx=$('#fx'),ctx=fx.getContext('2d');let parts=[],raf=0;
+function confetti(n=120){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;fx.width=innerWidth;fx.height=innerHeight;const cs=getComputedStyle(document.documentElement);const cols=['--sun','--coral','--leaf','--sky','--grape'].map(v=>cs.getPropertyValue(v).trim());
+  for(let i=0;i<n;i++)parts.push({x:innerWidth/2+(rand()-.5)*200,y:innerHeight*.35,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,s:Math.random()*8+5,c:cols[i%cols.length],r:Math.random()*6,life:120});
+  if(!raf)loop()}
+function loop(){ctx.clearRect(0,0,fx.width,fx.height);parts=parts.filter(p=>p.life-->0&&p.y<fx.height+20);for(const p of parts){p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=.2;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);ctx.restore()}raf=parts.length?requestAnimationFrame(loop):(ctx.clearRect(0,0,fx.width,fx.height),0)}
+let toastT;function toast(m){let t=$('.toast');if(!t){t=document.createElement('div');t.className='toast';t.setAttribute('role','status');document.body.appendChild(t)}t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200)}
+function mood(happy){$('#playDragon').setAttribute('href',happy?'#dragon':'#dragonSad')}
+
+/* ====================== 畫面切換 ====================== */
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='s-'+id);scrollTo({top:0,behavior:'smooth'});if(id==='map')renderMap();if(id==='topics')renderTopics();if(id==='album')renderAlbum()}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(!g)return;SFX.tap();const id=g.dataset.go;if(id==='timed')startTimed();else show(id)});
+$('#brand').onclick=()=>{stopTimer();show('home')};
+$('#soundBtn').onclick=()=>{S.sound=!S.sound;save();SFX.tap()};
+
+function renderMap(){
+  const m=$('#map');m.innerHTML='';
+  STAGES.forEach((st,i)=>{
+    const unlocked=i===0||(S.stars[i-1]||0)>0;const stars=S.stars[i]||0;
+    const b=document.createElement('button');b.className='stage'+(stars?' done':'')+(st.boss?' boss':'')+(unlocked?'':' locked');b.disabled=!unlocked;
+    b.innerHTML=`<span class="dot">${unlocked?st.icon:'🔒'}</span><span><span class="sn">第 ${i+1} 關</span><b>${st.name}</b><span class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span></span>`;
+    b.onclick=()=>{SFX.tap();startStage(i)};m.appendChild(b);
+  });
+}
+function renderTopics(){
+  const g=$('#topicGrid');g.innerHTML='';
+  TOPIC_ORDER.forEach(k=>{const b=document.createElement('button');b.className='topic';b.innerHTML=`<span class="ti">${T[k].icon}</span><b>${T[k].name}</b><small>無限題目</small>`;b.onclick=()=>{SFX.tap();startPractice(k)};g.appendChild(b)});
+}
+function renderAlbum(){
+  const a=$('#album');a.innerHTML='';const have=Object.keys(S.stickers).length;$('#albumCount').textContent=`${have} / ${STICKERS.length}`;
+  STICKERS.forEach((s,i)=>{const d=document.createElement('div');d.className='slot '+(S.stickers[s]?'have':'empty');d.textContent=S.stickers[s]?s:i+1;a.appendChild(d)});
+  $('#drawBtn').disabled=S.coins<15;
+}
+$('#drawBtn').onclick=()=>{
+  if(S.coins<15)return toast('金幣不夠，再去答幾題吧！');
+  S.coins-=15;const s=STICKERS[Math.floor(Math.random()*STICKERS.length)];
+  if(S.stickers[s]){S.coins+=5;$('#drawMsg').textContent=`抽到 ${s}，已經有了，退回 5 枚金幣。`}else{S.stickers[s]=1;$('#drawMsg').textContent=`哇！抽到新貼紙 ${s}！`;SFX.win();confetti(60)}
+  save();renderAlbum();
+};
+
+/* ====================== 遊戲流程 ====================== */
+let G=null,timer=0;
+function stopTimer(){clearInterval(timer);timer=0}
+
+function startStage(i){const st=STAGES[i];rand=Math.random;G={mode:'stage',stage:i,qs:makeSet(st.mix,st.boss?12:10),i:0,hearts:3,correct:0,combo:0,maxCombo:0};renderQ();show('play')}
+function startPractice(k){rand=Math.random;G={mode:'practice',topic:k,qs:[T[k].gen()],i:0,correct:0,wrongN:0,combo:0,maxCombo:0};G.qs[0].topic=k;renderQ();show('play')}
+function startExam(seed){
+  rand=mulberry32(seed);
+  const plan=['num','num','add','add','sub','sub','box','mul','mul','mulpic','word','word','mulword','mulword','len','time','time','money','frac',pick(['shape','cal','pattern'])];
+  const qs=[];const seen=new Set();
+  for(const k of plan){let q,g=0;do{q=T[k].gen();g++}while(seen.has(q.text+(q.vis||''))&&g<30);seen.add(q.text+(q.vis||''));q.topic=k;qs.push(q)}
+  rand=Math.random;
+  G={mode:'exam',seed,qs,i:0,answers:Array(qs.length).fill(null)};renderQ();show('play');
+}
+$('#randomExam').onclick=()=>{SFX.tap();startExam(ri(1000,99999))};
+$('#seedStart').onclick=()=>{const v=parseInt($('#seedInput').value,10);if(!v)return toast('請輸入數字編號，例如 2468');SFX.tap();startExam(v)};
+
+function genQuick(){const t=ri(0,2);
+  if(t===0){const a=ri(5,60),b=ri(3,39);return Q({text:`${N(a)} + ${N(b)} = ？`,ans:a+b,kind:'choice'})}
+  if(t===1){const a=ri(20,99),b=ri(3,a-1);return Q({text:`${N(a)} − ${N(b)} = ？`,ans:a-b,kind:'choice'})}
+  const a=ri(2,9),b=ri(2,9);return Q({text:`${N(a)} × ${N(b)} = ？`,ans:a*b,kind:'choice'});
+}
+function startTimed(){rand=Math.random;G={mode:'timed',qs:[genQuick()],i:0,correct:0,left:60,combo:0,maxCombo:0};renderQ();show('play');
+  stopTimer();timer=setInterval(()=>{G.left--;const bar=$('#timeFill');if(bar)bar.style.width=(G.left/60*100)+'%';const tl=$('#timeLeft');if(tl)tl.textContent=G.left;if(G.left<=0){stopTimer();endTimed()}},1000)}
+
+function renderHud(){
+  const h=$('#hud');
+  if(G.mode==='stage'){h.innerHTML=`<span class="hearts" aria-label="愛心 ${G.hearts}">${'❤️'.repeat(G.hearts)}${'🤍'.repeat(3-G.hearts)}</span><div class="progress"><i style="width:${G.i/G.qs.length*100}%"></i></div><span class="pill">${STAGES[G.stage].name}</span>`}
+  else if(G.mode==='practice'){h.innerHTML=`<span class="pill">✅ <span class="num">${G.correct}</span></span><span class="pill">連擊 <span class="num combo">${G.combo}</span></span><span style="flex:1"></span><button class="btn ghost" id="endPractice">結束練習</button>`;$('#endPractice').onclick=endPractice}
+  else if(G.mode==='timed'){h.innerHTML=`<span class="pill">⏱ <span class="num" id="timeLeft">${G.left}</span> 秒</span><div class="progress timebar"><i id="timeFill" style="width:${G.left/60*100}%"></i></div><span class="pill">答對 <span class="num">${G.correct}</span></span>`}
+  else{const done=G.answers.filter(a=>a!==null).length;h.innerHTML=`<span class="pill">📝 考卷編號 <span class="num">${G.seed}</span></span><div class="progress"><i style="width:${done/G.qs.length*100}%"></i></div><span class="pill">已作答 <span class="num">${done}/${G.qs.length}</span></span>`}
+}
+
+function renderQ(){
+  const q=G.qs[G.i];renderHud();mood(true);
+  const total=G.mode==='stage'||G.mode==='exam'?` / ${G.qs.length}`:'';
+  $('#qno').textContent=`第 ${G.i+1}${total} 題`;
+  $('#qtag').textContent=q.topic&&T[q.topic]?T[q.topic].name:(G.mode==='timed'?'快算':'九九乘法');
+  $('#qtext').innerHTML=q.text;$('#qvis').innerHTML=q.vis||'';$('#qvis').hidden=!q.vis;
+  $('#speakBtn').onclick=()=>speak(sayText(q));
+  $('#fbArea').innerHTML='';
+  const area=$('#answerArea');area.innerHTML='';
+  const prev=G.mode==='exam'?G.answers[G.i]:null;
+  if(q.kind==='choice'){
+    const box=document.createElement('div');box.className='choices';
+    q.choices.forEach(c=>{const b=document.createElement('button');b.className='choice'+(prev===c?' sel':'');b.innerHTML=fmt(c);b.dataset.v=c;b.onclick=()=>submit(c,b);box.appendChild(b)});
+    area.appendChild(box);
+  }else{
+    let val=prev||'';
+    area.innerHTML=`<div class="keypad-wrap"><div class="display" aria-live="polite"><span class="num" id="disp">${val||'?'}</span>${q.unit?`<span class="unit">${q.unit}</span>`:''}</div><div class="keypad" id="keypad"></div></div>`;
+    const kp=$('#keypad');
+    const keys=['7','8','9','⌫','4','5','6','OK','1','2','3','0','清除'];
+    keys.forEach(k=>{const b=document.createElement('button');b.className='key'+(k==='OK'?' ok':'')+(k==='⌫'||k==='清除'?' fn':'');b.textContent=k==='OK'?(G.mode==='exam'?'確定':'送出'):k;if(k==='清除')b.style.gridColumn='span 2';
+      b.onclick=()=>press(k);kp.appendChild(b)});
+    // 重新排列：0 和清除放最後一列
+    function press(k){
+      if(G.locked)return;
+      if(k==='OK'){if(val==='')return toast('先按數字再送出喔');submit(val);return}
+      if(k==='⌫')val=val.slice(0,-1);else if(k==='清除')val='';else if(val.length<4)val=(val==='0'?'':val)+k;
+      SFX.tap();$('#disp').textContent=val||'?';
+    }
+    G.press=press;
+  }
+  G.locked=false;
+  renderExamNav();
+}
+document.addEventListener('keydown',e=>{
+  if($('#s-play').hidden||!G||!G.press||G.qs[G.i].kind!=='input'||e.target.tagName==='INPUT')return;
+  if(/^[0-9]$/.test(e.key))G.press(e.key);else if(e.key==='Backspace')G.press('⌫');else if(e.key==='Enter'){e.preventDefault();if(G.locked){const n=$('#nextBtn');if(n)n.click()}else G.press('OK')}
+});
+
+function isRight(q,v){v=String(v).trim();if(v===q.ans)return true;return /^\d+$/.test(v)&&/^\d+$/.test(q.ans)&&+v===+q.ans}
+
+function submit(v,btn){
+  if(G.locked)return;const q=G.qs[G.i];
+  if(G.mode==='exam'){G.answers[G.i]=String(v);SFX.tap();if(G.i<G.qs.length-1){G.i++;renderQ()}else{renderQ();toast('最後一題寫好了，檢查完就可以交卷！')}return}
+  G.locked=true;const ok=isRight(q,v);
+  if(q.kind==='choice')document.querySelectorAll('.choice').forEach(b=>{b.disabled=true;if(b.dataset.v===q.ans)b.classList.add('right');else if(b===btn)b.classList.add('wrong')});
+  if(ok){G.correct++;G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);const gain=1+(G.combo>=5?2:G.combo>=3?1:0);S.coins+=gain;save();SFX.ok();if(G.combo>0&&G.combo%5===0){SFX.coin();confetti(50)}mood(true);q.gain=gain}
+  else{G.combo=0;SFX.bad();mood(false);if(G.mode==='stage')G.hearts--;if(G.mode==='practice')G.wrongN++;if(G.mode==='timed')G.left=Math.max(1,G.left-3)}
+  if(G.mode==='timed'){setTimeout(()=>{if(!timer)return;G.qs.push(genQuick());G.i++;renderQ()},ok?250:700);return}
+  renderHud();
+  const praise=pick(['答對了！','好厲害！','太棒了！','完全正確！','你是數學小高手！']);
+  const fb=document.createElement('div');fb.className='feedback '+(ok?'ok':'bad');
+  fb.innerHTML=`<div><h3>${ok?praise+` <span class="combo">+${q.gain}🪙${G.combo>=3?' 連擊 '+G.combo:''}</span>`:'差一點點！正確答案是 '+fmt(q.ans)+(q.unit?' '+q.unit:'')}</h3><p>${q.exp||''}</p></div><button class="btn ${ok?'leaf':'sky'}" id="nextBtn">${G.mode==='stage'&&(G.hearts<=0||G.i===G.qs.length-1)?'看結果':'下一題 →'}</button>`;
+  $('#fbArea').appendChild(fb);
+  $('#nextBtn').onclick=next;$('#nextBtn').focus({preventScroll:true});
+  fb.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+function next(){
+  SFX.tap();
+  if(G.mode==='stage'){if(G.hearts<=0||G.i===G.qs.length-1)return endStage();G.i++;renderQ()}
+  else if(G.mode==='practice'){const q=T[G.topic].gen();q.topic=G.topic;G.qs.push(q);G.i++;renderQ()}
+}
+
+function renderExamNav(){
+  const nav=$('#examNav');
+  if(G.mode!=='exam'){nav.innerHTML='';return}
+  nav.innerHTML=`<div class="nav-row"><button class="btn ghost" id="prevQ" ${G.i===0?'disabled':''}>← 上一題</button><button class="btn coral" id="handIn">交卷</button><button class="btn ghost" id="nextQ" ${G.i===G.qs.length-1?'disabled':''}>下一題 →</button></div><div class="dots" id="dots"></div><div id="confirmBox"></div>`;
+  const dots=$('#dots');G.qs.forEach((_,i)=>{const b=document.createElement('button');b.textContent=i+1;b.className=(G.answers[i]!==null?'filled':'')+(i===G.i?' cur':'');b.setAttribute('aria-label',`第 ${i+1} 題`);b.onclick=()=>{G.i=i;renderQ()};dots.appendChild(b)});
+  $('#prevQ').onclick=()=>{G.i--;renderQ()};$('#nextQ').onclick=()=>{G.i++;renderQ()};
+  $('#handIn').onclick=()=>{
+    const blank=G.answers.filter(a=>a===null).length;
+    if(blank===0)return endExam();
+    $('#confirmBox').innerHTML=`<div class="feedback bad"><div><h3>還有 ${blank} 題沒寫</h3><p>確定要交卷嗎？沒寫的題目算錯喔。</p></div><button class="btn coral" id="sureHand">確定交卷</button></div>`;
+    $('#sureHand').onclick=endExam;
+  };
+}
+
+/* ====================== 結算 ====================== */
+function reviewHTML(list){
+  return `<div class="review">${list.map((r,i)=>`<div class="rv ${r.ok?'o':'x'}"><div class="qhead"><span class="mark ${r.ok?'o':'x'}">${r.ok?'○':'✕'}</span><span class="qno">第 ${i+1} 題</span><span class="tag">${T[r.q.topic]?T[r.q.topic].name:''}</span></div><div class="qtext">${r.q.text}</div>${r.q.vis?`<div class="vis">${r.q.vis}</div>`:''}<div>你的答案：<b>${r.a===null?'（沒寫）':fmt(r.a)}</b>　正確答案：<b>${fmt(r.q.ans)}${r.q.unit?' '+r.q.unit:''}</b></div><div class="exp">💡 ${r.q.exp||''}</div></div>`).join('')}</div>`;
+}
+function endExam(){
+  const res=G.qs.map((q,i)=>({q,a:G.answers[i],ok:G.answers[i]!==null&&isRight(q,G.answers[i])}));
+  const right=res.filter(r=>r.ok).length,score=right*5;
+  const grade=score>=90?'優':score>=80?'甲':score>=70?'乙':score>=60?'丙':'加油';
+  S.coins+=right;save();
+  if(score>=80){SFX.win();confetti()}
+  const wrongs=res.filter(r=>!r.ok);
+  $('#resultBox').innerHTML=`<h2>模擬考卷成績單</h2><p class="note" style="margin:0">考卷編號 <span class="num">${G.seed}</span>　輸入這個編號可以再寫一次同一份考卷</p>
+   <div class="stat-row"><div class="score">${score}</div><div class="stamp">${grade}</div></div>
+   <p style="margin:0">答對 <b class="num">${right}</b> 題，答錯 <b class="num">${20-right}</b> 題，獲得 <b class="num">${right}</b> 枚金幣</p>
+   <div class="stat-row"><button class="btn" id="retrySame">再寫一次這份</button><button class="btn sky" id="newExam">換一份新考卷</button><button class="btn ghost" data-go="home">回首頁</button></div>
+   ${wrongs.length?`<h3 style="margin-top:10px">錯題訂正（${wrongs.length} 題）</h3>`:'<h3>全部答對！滿分！</h3>'}
+   ${reviewHTML(res)}`;
+  const seed=G.seed;$('#retrySame').onclick=()=>startExam(seed);$('#newExam').onclick=()=>startExam(ri(1000,99999));
+  show('result');
+}
+function endStage(){
+  const st=STAGES[G.stage];const pass=G.hearts>0;const stars=pass?G.hearts:0;
+  if(pass){S.stars[G.stage]=Math.max(S.stars[G.stage]||0,stars);S.coins+=stars*3;save();SFX.win();confetti()}
+  const nextOk=pass&&G.stage<STAGES.length-1;
+  $('#resultBox').innerHTML=`<svg class="mascot" viewBox="0 0 120 120" width="120" height="120" aria-hidden="true"><use href="${pass?'#dragon':'#dragonSad'}"/></svg>
+   <h2>${pass?`${st.name} 過關！`:'愛心用完了'}</h2>
+   <div class="big-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
+   <p style="margin:0">答對 <b class="num">${G.correct}</b> 題，最高連擊 <b class="num">${G.maxCombo}</b>${pass?`，過關獎勵 <b class="num">${stars*3}</b> 枚金幣`:''}</p>
+   <p class="note" style="margin:0">${pass?(stars<3?'不扣愛心全部答對，就能拿到 3 顆星！':'完美通關！'):'別灰心，題目每次都會換，再挑戰一次吧！'}</p>
+   <div class="stat-row"><button class="btn" id="again">再玩一次</button>${nextOk?'<button class="btn leaf" id="nextStage">下一關 →</button>':''}<button class="btn ghost" data-go="map">回地圖</button></div>`;
+  const i=G.stage;$('#again').onclick=()=>startStage(i);if(nextOk)$('#nextStage').onclick=()=>startStage(i+1);
+  show('result');
+}
+function endPractice(){
+  const tot=G.correct+G.wrongN;const k=G.topic;
+  $('#resultBox').innerHTML=`<h2>${T[k].name} 練習結束</h2><div class="score">${tot?Math.round(G.correct/tot*100):0}<span style="font-size:.35em">%</span></div>
+   <p style="margin:0">一共寫了 <b class="num">${tot}</b> 題，答對 <b class="num">${G.correct}</b> 題，最高連擊 <b class="num">${G.maxCombo}</b></p>
+   <div class="stat-row"><button class="btn" id="again">繼續練這個單元</button><button class="btn ghost" data-go="topics">換單元</button></div>`;
+  $('#again').onclick=()=>startPractice(k);show('result');
+}
+function endTimed(){
+  const best=S.best||0;const nb=G.correct>best;if(nb){S.best=G.correct}S.coins+=Math.floor(G.correct/2);save();
+  if(nb&&G.correct>0){SFX.win();confetti()}
+  $('#resultBox').innerHTML=`<h2>時間到！</h2><div class="score">${G.correct}</div><p style="margin:0">60 秒答對 <b class="num">${G.correct}</b> 題${nb?'，刷新個人紀錄！':`，最佳紀錄 <b class="num">${best}</b> 題`}</p>
+   <p class="note" style="margin:0">獲得 <b class="num">${Math.floor(G.correct/2)}</b> 枚金幣。答錯會扣 3 秒，要又快又準！</p>
+   <div class="stat-row"><button class="btn" id="again">再挑戰</button><button class="btn ghost" data-go="home">回首頁</button></div>`;
+  $('#again').onclick=startTimed;show('result');
+}
+
+refreshTop();
+</script>
+</body>
+</html>
