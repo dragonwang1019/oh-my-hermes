@@ -220,7 +220,12 @@ h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
 .exam-box{display:grid;gap:14px;background:var(--paper);border:3px solid var(--ink);border-radius:24px;padding:20px;box-shadow:0 8px 0 var(--ink)}
 .exam-box label{font-weight:700}
 .field{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.field input{font:inherit;font-family:var(--font-num);font-size:1.4rem;font-weight:800;width:150px;border:3px solid var(--line);border-radius:14px;padding:6px 12px;background:var(--bg);color:var(--ink)}
+.field input{font:inherit;font-family:var(--font-num);font-size:1.4rem;font-weight:800;width:190px;border:3px solid var(--line);border-radius:14px;padding:6px 12px;background:var(--bg);color:var(--ink)}
+.opts{display:grid;gap:12px}
+.field select{font:inherit;font-weight:700;border:3px solid var(--line);border-radius:14px;padding:6px 12px;background:var(--bg);color:var(--ink)}
+.toggle{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-weight:700}
+.toggle input{width:28px;height:28px;flex:none;margin:2px 0 0;accent-color:var(--leaf)}
+.toggle small{display:block;font-weight:500;color:var(--muted);font-size:.9rem}
 .paper-lines{background:repeating-linear-gradient(var(--paper) 0 34px,var(--line) 34px 36px);border-radius:12px;padding:10px 14px}
 
 /* 貼紙簿 */
@@ -251,6 +256,8 @@ h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
   .mascot-row{width:64px;height:64px;top:-40px}
   .card{padding:16px}
   .choice{font-size:1.2rem}
+  .score{font-size:clamp(3.5rem,14vw,7rem)}
+  .stamp{width:96px;height:96px;font-size:1.25rem}
 }
 </style>
 </head>
@@ -306,15 +313,20 @@ h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
       <div class="paper-lines">
         <p style="margin:0">二年級數學　隨堂測驗</p>
         <p style="margin:0">題數：<span class="num">20</span> 題　每題 <span class="num">5</span> 分　滿分 <span class="num">100</span> 分</p>
-        <p style="margin:0">範圍：數到 1000、加減直式、九九乘法、應用題、長度、時間、錢幣、分數、圖形</p>
+        <p style="margin:0" id="rangeText"></p>
       </div>
-      <p class="note" style="margin:0">每張考卷都有「考卷編號」。輸入同一個編號，就會出現一模一樣的考卷，老師和家長可以讓全班寫同一份。</p>
-      <div class="field">
-        <label for="seedInput">考卷編號</label>
-        <input id="seedInput" inputmode="numeric" maxlength="6" placeholder="例如 2468">
-        <button class="btn sky" id="seedStart">用這個編號出題</button>
+      <div class="opts">
+        <div class="field"><label for="gradeSel">年級</label><select id="gradeSel"></select></div>
+        <label class="toggle" for="optMul"><input type="checkbox" id="optMul" checked><span>考卷包含九九乘法<small>（乘法計算、看圖學乘法、乘法應用題）</small></span></label>
       </div>
       <div><button class="btn" id="randomExam">隨機出一份新考卷</button></div>
+      <p class="note" style="margin:0">每張考卷都有「考卷編號」，編號已經記住年級和要不要考乘法。輸入同一個編號，就會出現一模一樣的考卷，老師和家長可以讓全班寫同一份。編號後面有 N 的考卷不考九九乘法。</p>
+      <div class="field">
+        <label for="seedInput">考卷編號</label>
+        <input id="seedInput" maxlength="12" autocomplete="off" placeholder="例如 2468 或 2468N">
+        <button class="btn sky" id="seedStart">用這個編號出題</button>
+      </div>
+      <p class="note" style="margin:0" id="codeHint" aria-live="polite"></p>
     </div>
   </section>
 
@@ -380,6 +392,7 @@ h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
 <script>
 /* ====================== 基本工具 ====================== */
 let rand = Math.random;                          // 可切換成「種子亂數」，讓考卷可重現
+let GEN={mul:true};                              // 出題選項：mul=false 時，各單元不出乘法相關題型
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const ri=(a,b)=>a+Math.floor(rand()*(b-a+1));
 const pick=a=>a[Math.floor(rand()*a.length)];
@@ -519,7 +532,7 @@ T.sub={name:'減法直式',icon:'➖',gen(){
 
 /* 4. 填 □（加減乘的逆向思考） */
 T.box={name:'填填看 □',icon:'🔲',gen(){
-  const t=ri(0,5);
+  const t=GEN.mul?ri(0,5):ri(0,3);                // 4、5 是乘法的 □
   if(t===0){const x=ri(10,500),a=ri(10,400);return Q({text:`□ + ${N(a)} = ${N(x+a)}，□ 是多少？`,ans:x,exp:`□ = ${x+a} − ${a} = ${x}`})}
   if(t===1){const x=ri(10,500),a=ri(10,400);return Q({text:`${N(a)} + □ = ${N(x+a)}，□ 是多少？`,ans:x,exp:`□ = ${x+a} − ${a} = ${x}`})}
   if(t===2){const x=ri(50,900),a=ri(10,x-5);return Q({text:`□ − ${N(a)} = ${N(x-a)}，□ 是多少？`,ans:x,exp:`□ = ${x-a} + ${a} = ${x}`})}
@@ -659,7 +672,7 @@ const BIG=[1,3,5,7,8,10,12],SMALL=[4,6,9,11];
 T.cal={name:'日曆',icon:'📅',gen(){
   const t=ri(0,4);
   if(t<=1){const w=ri(0,6),n=ri(2,20);const ans=`星期${W[(w+n)%7]}`;return Q({text:`今天是星期${W[w]}，再過 ${N(n)} 天是星期幾？`,ans,kind:'choice',choices:uniqChoices(ans,W.map(x=>'星期'+x)),exp:`一星期有 7 天，每過 7 天又回到同一天。${n} 天 = ${Math.floor(n/7)} 個星期又 ${n%7} 天。`})}
-  if(t===2){const b=ri(2,9);return rand()<.5?Q({text:`${N(b)} 個星期 = □ 天`,ans:7*b,unit:'天',exp:`7 × ${b} = ${7*b}`}):Q({text:`${N(7*b)} 天 = □ 個星期`,ans:b,unit:'星期',exp:`7 × ${b} = ${7*b}，所以是 ${b} 個星期。`})}
+  if(t===2&&GEN.mul){const b=ri(2,9);return rand()<.5?Q({text:`${N(b)} 個星期 = □ 天`,ans:7*b,unit:'天',exp:`7 × ${b} = ${7*b}`}):Q({text:`${N(7*b)} 天 = □ 個星期`,ans:b,unit:'星期',exp:`7 × ${b} = ${7*b}，所以是 ${b} 個星期。`})}
   if(t===3){const m=ri(1,12),d=ri(1,18),n=ri(3,10);return Q({text:`${N(m)} 月 ${N(d)} 日再過 ${N(n)} 天，是 ${N(m)} 月幾日？`,ans:d+n,unit:'日',exp:`${d} + ${n} = ${d+n}`})}
   if(rand()<.5){const a=pick(BIG);return Q({text:'下面哪一個月有 31 天？',ans:`${a}月`,kind:'choice',choices:[`${a}月`,...shuffle([...SMALL,2]).slice(0,3).map(x=>x+'月')],exp:'31 天的大月：1、3、5、7、8、10、12 月。'})}
   const f=pick([['一年有幾個月？',12],['一個星期有幾天？',7],['4 月有幾天？',30],['12 月有幾天？',31]]);return Q({text:f[0],ans:f[1],exp:'記住：大月 31 天，小月 30 天，2 月比較特別。'});
@@ -672,7 +685,7 @@ T.pattern={name:'找規律',icon:'🧩',gen(){
     const seq=Array.from({length:len},(_,i)=>sy[p[i%p.length]]);const ans=sy[p[len%p.length]];
     return Q({text:'照著規律排，下一個是什麼？',vis:`<div class="pattern">${seq.join('')}<span class="q">？</span></div>`,ans,kind:'choice',choices:uniqChoices(ans,sy),exp:`每 ${p.length} 個一組重複：${p.map(i=>sy[i]).join('')}`})}
   const step=pick([2,3,4,5,6,7,8,9,10]);const s=step*ri(0,4);const seq=[0,1,2,3,4].map(i=>s+i*step);const hole=ri(2,4);const ans=seq[hole];
-  return Q({text:`找規律：${seq.map((x,i)=>i===hole?'□':N(x)).join('、')}，□ 是多少？`,ans,exp:`每次多 ${step}（就像 ${step} 的乘法），□ = ${ans}`});
+  return Q({text:`找規律：${seq.map((x,i)=>i===hole?'□':N(x)).join('、')}，□ 是多少？`,ans,exp:`每次多 ${step}${GEN.mul?`（就像 ${step} 的乘法）`:''}，□ = ${ans}`});
 }};
 
 const TOPIC_ORDER=['num','add','sub','box','mul','mulpic','word','mulword','len','time','money','frac','shape','cal','pattern'];
@@ -716,7 +729,7 @@ let toastT;function toast(m){let t=$('.toast');if(!t){t=document.createElement('
 function mood(happy){$('#playDragon').setAttribute('href',happy?'#dragon':'#dragonSad')}
 
 /* ====================== 畫面切換 ====================== */
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='s-'+id);scrollTo({top:0,behavior:'smooth'});if(id==='map')renderMap();if(id==='topics')renderTopics();if(id==='album')renderAlbum()}
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='s-'+id);scrollTo({top:0,behavior:'smooth'});if(id==='map')renderMap();if(id==='topics')renderTopics();if(id==='album')renderAlbum();if(id==='exam')renderExamSetup()}
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(!g)return;SFX.tap();const id=g.dataset.go;if(id==='timed')startTimed();else show(id)});
 $('#brand').onclick=()=>{stopTimer();show('home')};
 $('#soundBtn').onclick=()=>{S.sound=!S.sound;save();SFX.tap()};
@@ -752,16 +765,52 @@ function stopTimer(){clearInterval(timer);timer=0}
 
 function startStage(i){const st=STAGES[i];rand=Math.random;G={mode:'stage',stage:i,qs:makeSet(st.mix,st.boss?12:10),i:0,hearts:3,correct:0,combo:0,maxCombo:0};renderQ();show('play')}
 function startPractice(k){rand=Math.random;G={mode:'practice',topic:k,qs:[T[k].gen()],i:0,correct:0,wrongN:0,combo:0,maxCombo:0};G.qs[0].topic=k;renderQ();show('play')}
-function startExam(seed){
-  rand=mulberry32(seed);
-  const plan=['num','num','add','add','sub','sub','box','mul','mul','mulpic','word','word','mulword','mulword','len','time','time','money','frac',pick(['shape','cal','pattern'])];
+/* 年級設定：要新增年級時，在這裡加一筆，並把該年級的單元放進 T。
+   exam(o) 回傳 20 題的單元清單；o.mul 表示是否考九九乘法。 */
+const GRADES={
+  2:{name:'二年級',
+    exam(o){
+      const base=['num','num','add','add','sub','sub','box','word','word','len','time','time','money','frac',pick(['shape','cal','pattern'])];
+      const extra=o.mul?['mul','mul','mulpic','mulword','mulword']:['num','add','sub','box','word'];
+      return [...base,...extra].sort((a,b)=>TOPIC_ORDER.indexOf(a)-TOPIC_ORDER.indexOf(b));
+    },
+    range:o=>`範圍：數到 1000、加減直式、${o.mul?'九九乘法、':''}應用題、長度、時間、錢幣、分數、圖形`},
+};
+const DEFAULT_GRADE=2;
+/* 考卷編號格式：[G年級-]數字[N]。例：2468＝二年級含乘法，2468N＝不含乘法，G3-2468＝三年級（之後新增）。 */
+function makeCode(c){return `${c.grade===DEFAULT_GRADE?'':`G${c.grade}-`}${c.seed}${c.mul?'':'N'}`}
+function parseCode(str){
+  const m=/^(?:G(\d+)-)?(\d{1,8})(N?)$/i.exec(String(str).trim().replace(/\s/g,''));
+  if(!m)return null;
+  return {grade:m[1]?+m[1]:DEFAULT_GRADE,seed:+m[2],mul:!m[3]};
+}
+function examOpts(){return {grade:+$('#gradeSel').value||DEFAULT_GRADE,mul:$('#optMul').checked}}
+function startExam(c){
+  const gr=GRADES[c.grade];if(!gr)return toast(`目前還沒有${c.grade}年級的題庫`);
+  rand=mulberry32(c.seed);GEN={mul:c.mul};
+  const plan=gr.exam(c);
   const qs=[];const seen=new Set();
   for(const k of plan){let q,g=0;do{q=T[k].gen();g++}while(seen.has(q.text+(q.vis||''))&&g<30);seen.add(q.text+(q.vis||''));q.topic=k;qs.push(q)}
-  rand=Math.random;
-  G={mode:'exam',seed,qs,i:0,answers:Array(qs.length).fill(null)};renderQ();show('play');
+  rand=Math.random;GEN={mul:true};
+  G={mode:'exam',cfg:c,code:makeCode(c),qs,i:0,answers:Array(qs.length).fill(null)};renderQ();show('play');
 }
-$('#randomExam').onclick=()=>{SFX.tap();startExam(ri(1000,99999))};
-$('#seedStart').onclick=()=>{const v=parseInt($('#seedInput').value,10);if(!v)return toast('請輸入數字編號，例如 2468');SFX.tap();startExam(v)};
+const newSeed=()=>ri(1000,99999);
+function renderExamSetup(){
+  const sel=$('#gradeSel');
+  if(!sel.options.length)sel.innerHTML=Object.entries(GRADES).map(([g,v])=>`<option value="${g}">${v.name}</option>`).join('');
+  const o=Object.assign({grade:DEFAULT_GRADE,mul:true},S.examOpts||{});
+  if(GRADES[o.grade])sel.value=o.grade;$('#optMul').checked=o.mul;
+  updateRange();
+}
+function updateRange(){const o=examOpts();$('#rangeText').textContent=GRADES[o.grade].range(o)}
+function saveExamOpts(){S.examOpts=examOpts();save();updateRange()}
+$('#gradeSel').onchange=saveExamOpts;$('#optMul').onchange=()=>{SFX.tap();saveExamOpts()};
+$('#seedInput').oninput=()=>{
+  const v=$('#seedInput').value.trim(),c=parseCode(v);
+  $('#codeHint').textContent=!v?'':!c?'編號格式不對，請輸入數字，例如 2468 或 2468N':!GRADES[c.grade]?`目前還沒有${c.grade}年級的題庫`:`這份是${GRADES[c.grade].name}考卷，${c.mul?'包含':'不含'}九九乘法。`;
+};
+$('#randomExam').onclick=()=>{SFX.tap();startExam({...examOpts(),seed:newSeed()})};
+$('#seedStart').onclick=()=>{const c=parseCode($('#seedInput').value);if(!c||!c.seed)return toast('請輸入考卷編號，例如 2468 或 2468N');SFX.tap();startExam(c)};
 
 function genQuick(){const t=ri(0,2);
   if(t===0){const a=ri(5,60),b=ri(3,39);return Q({text:`${N(a)} + ${N(b)} = ？`,ans:a+b,kind:'choice'})}
@@ -776,7 +825,7 @@ function renderHud(){
   if(G.mode==='stage'){h.innerHTML=`<span class="hearts" aria-label="愛心 ${G.hearts}">${'❤️'.repeat(G.hearts)}${'🤍'.repeat(3-G.hearts)}</span><div class="progress"><i style="width:${G.i/G.qs.length*100}%"></i></div><span class="pill">${STAGES[G.stage].name}</span>`}
   else if(G.mode==='practice'){h.innerHTML=`<span class="pill">✅ <span class="num">${G.correct}</span></span><span class="pill">連擊 <span class="num combo">${G.combo}</span></span><span style="flex:1"></span><button class="btn ghost" id="endPractice">結束練習</button>`;$('#endPractice').onclick=endPractice}
   else if(G.mode==='timed'){h.innerHTML=`<span class="pill">⏱ <span class="num" id="timeLeft">${G.left}</span> 秒</span><div class="progress timebar"><i id="timeFill" style="width:${G.left/60*100}%"></i></div><span class="pill">答對 <span class="num">${G.correct}</span></span>`}
-  else{const done=G.answers.filter(a=>a!==null).length;h.innerHTML=`<span class="pill">📝 考卷編號 <span class="num">${G.seed}</span></span><div class="progress"><i style="width:${done/G.qs.length*100}%"></i></div><span class="pill">已作答 <span class="num">${done}/${G.qs.length}</span></span>`}
+  else{const done=G.answers.filter(a=>a!==null).length;h.innerHTML=`<span class="pill">📝 考卷編號 <span class="num">${G.code}</span></span><div class="progress"><i style="width:${done/G.qs.length*100}%"></i></div><span class="pill">已作答 <span class="num">${done}/${G.qs.length}</span></span>`}
 }
 
 function renderQ(){
@@ -866,13 +915,13 @@ function endExam(){
   S.coins+=right;save();
   if(score>=80){SFX.win();confetti()}
   const wrongs=res.filter(r=>!r.ok);
-  $('#resultBox').innerHTML=`<h2>模擬考卷成績單</h2><p class="note" style="margin:0">考卷編號 <span class="num">${G.seed}</span>　輸入這個編號可以再寫一次同一份考卷</p>
+  $('#resultBox').innerHTML=`<h2>模擬考卷成績單</h2><p class="note" style="margin:0">考卷編號 <span class="num">${G.code}</span>（${GRADES[G.cfg.grade].name}・${G.cfg.mul?'含':'不含'}九九乘法）　輸入這個編號可以再寫一次同一份考卷</p>
    <div class="stat-row"><div class="score">${score}</div><div class="stamp">${grade}</div></div>
-   <p style="margin:0">答對 <b class="num">${right}</b> 題，答錯 <b class="num">${20-right}</b> 題，獲得 <b class="num">${right}</b> 枚金幣</p>
+   <p style="margin:0">答對 <b class="num">${right}</b> 題，答錯 <b class="num">${G.qs.length-right}</b> 題，獲得 <b class="num">${right}</b> 枚金幣</p>
    <div class="stat-row"><button class="btn" id="retrySame">再寫一次這份</button><button class="btn sky" id="newExam">換一份新考卷</button><button class="btn ghost" data-go="home">回首頁</button></div>
    ${wrongs.length?`<h3 style="margin-top:10px">錯題訂正（${wrongs.length} 題）</h3>`:'<h3>全部答對！滿分！</h3>'}
    ${reviewHTML(res)}`;
-  const seed=G.seed;$('#retrySame').onclick=()=>startExam(seed);$('#newExam').onclick=()=>startExam(ri(1000,99999));
+  const cfg=G.cfg;$('#retrySame').onclick=()=>startExam(cfg);$('#newExam').onclick=()=>startExam({...cfg,seed:newSeed()});
   show('result');
 }
 function endStage(){
