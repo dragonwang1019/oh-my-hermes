@@ -226,6 +226,11 @@ h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
 .toggle{display:flex;gap:12px;align-items:flex-start;cursor:pointer;font-weight:700}
 .toggle input{width:28px;height:28px;flex:none;margin:2px 0 0;accent-color:var(--leaf)}
 .toggle small{display:block;font-weight:500;color:var(--muted);font-size:.9rem}
+.settings{margin-top:16px;background:var(--paper);border:3px solid var(--sun);border-radius:var(--r);padding:14px 16px}
+.exit{padding:6px 14px;font-size:1rem;box-shadow:0 3px 0 var(--line)}
+.exit-box{margin-bottom:14px}
+.exit-box .feedback{grid-template-columns:1fr;margin-top:0}
+.exit-box .acts{display:flex;gap:10px;flex-wrap:wrap}
 .paper-lines{background:repeating-linear-gradient(var(--paper) 0 34px,var(--line) 34px 36px);border-radius:12px;padding:10px 14px}
 
 /* 貼紙簿 */
@@ -283,11 +288,14 @@ h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
         <div class="bubble" style="margin-top:10px">我是小算龍！國小二年級的數學題目都在島上，每次出題都不一樣，一起來闖關、考試、收集貼紙吧！</div>
       </div>
     </div>
+    <div class="settings">
+      <label class="toggle" for="homeMul"><input type="checkbox" id="homeMul" checked><span>出題包含九九乘法<small id="mulNote">闖關、單元練習、60 秒快算、模擬考卷都會出乘法題。</small></span></label>
+    </div>
     <div class="modes">
       <button class="mode" data-go="map"><span class="mi a">🗺️</span><span><h3>闖關冒險</h3><p>10 座小島，每關 10 題，3 顆愛心。拿滿星星解鎖下一關。</p></span></button>
       <button class="mode" data-go="exam"><span class="mi b">📝</span><span><h3>模擬考卷</h3><p>20 題、每題 5 分。交卷後打分數，附錯題訂正。</p></span></button>
       <button class="mode" data-go="topics"><span class="mi c">🎯</span><span><h3>單元練習</h3><p>選一個單元一直練，答對連擊拿更多金幣。</p></span></button>
-      <button class="mode" data-go="timed"><span class="mi d">⚡</span><span><h3>60 秒快算</h3><p>加、減、九九乘法，看你一分鐘能答對幾題。</p></span></button>
+      <button class="mode" data-go="timed"><span class="mi d">⚡</span><span><h3>60 秒快算</h3><p id="timedDesc">加、減、九九乘法，看你一分鐘能答對幾題。</p></span></button>
     </div>
     <div class="sec-title"><h2>我的貼紙簿</h2><button class="btn ghost" data-go="album">打開貼紙簿</button></div>
     <p class="note">答對題目賺金幣，15 枚金幣可以抽一張動物貼紙。共有 24 張等你收集！</p>
@@ -333,6 +341,7 @@ h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
   <!-- 作答 -->
   <section class="screen" id="s-play" hidden>
     <div class="hud" id="hud"></div>
+    <div class="exit-box" id="exitBox" hidden></div>
     <div class="card" id="card">
       <div class="mascot-row"><svg viewBox="0 0 120 120" aria-hidden="true"><use href="#dragon" id="playDragon"/></svg></div>
       <div class="qhead"><span class="qno" id="qno"></span><span class="tag" id="qtag"></span><button class="speak" id="speakBtn" aria-label="念題目給我聽">🔈 念題目</button></div>
@@ -688,6 +697,7 @@ T.pattern={name:'找規律',icon:'🧩',gen(){
   return Q({text:`找規律：${seq.map((x,i)=>i===hole?'□':N(x)).join('、')}，□ 是多少？`,ans,exp:`每次多 ${step}${GEN.mul?`（就像 ${step} 的乘法）`:''}，□ = ${ans}`});
 }};
 
+const MUL_TOPICS=['mul','mulpic','mulword'];       // 關閉九九乘法時要排除的單元
 const TOPIC_ORDER=['num','add','sub','box','mul','mulpic','word','mulword','len','time','money','frac','shape','cal','pattern'];
 
 /* ====================== 關卡設定 ====================== */
@@ -695,8 +705,8 @@ const STAGES=[
   {name:'數字森林',icon:'🌳',mix:['num','num','pattern']},
   {name:'加法沙灘',icon:'🏖️',mix:['add','add','word']},
   {name:'減法山谷',icon:'⛰️',mix:['sub','sub','box','word']},
-  {name:'乘法花園',icon:'🌻',mix:[()=>genMul([2,5,4,8]),'mulpic']},
-  {name:'乘法城堡',icon:'🏰',mix:[()=>genMul([3,6,9,7]),()=>genMul([3,6,9,7]),'box']},
+  {name:'乘法花園',icon:'🌻',mul:true,mix:[()=>genMul([2,5,4,8]),'mulpic']},
+  {name:'乘法城堡',icon:'🏰',mul:true,mix:[()=>genMul([3,6,9,7]),()=>genMul([3,6,9,7]),'box']},
   {name:'應用題市集',icon:'🎪',mix:['word','mulword']},
   {name:'時鐘塔',icon:'🕰️',mix:['time','time','cal']},
   {name:'錢幣商店',icon:'🏪',mix:['money']},
@@ -705,12 +715,15 @@ const STAGES=[
 ];
 const genFrom=x=>typeof x==='function'?x():T[x].gen();
 /* 避免同一回合出現相同題目 */
-function makeSet(mix,n){const out=[],seen=new Set();let guard=0;while(out.length<n&&guard<500){guard++;const src=pick(mix);const q=genFrom(src);q.topic=typeof src==='string'?src:(q.topic||'mul');const key=q.text+(q.vis||'');if(seen.has(key))continue;seen.add(key);out.push(q)}return out}
+const allowed=x=>GEN.mul||(typeof x==='string'&&!MUL_TOPICS.includes(x));
+function makeSet(mix,n){mix=mix.filter(allowed);const out=[],seen=new Set();let guard=0;while(out.length<n&&guard<500){guard++;const src=pick(mix);const q=genFrom(src);q.topic=typeof src==='string'?src:(q.topic||'mul');const key=q.text+(q.vis||'');if(seen.has(key))continue;seen.add(key);out.push(q)}return out}
 
 /* ====================== 存檔 ====================== */
 const STICKERS=['🐶','🐱','🐰','🦊','🐼','🐨','🐯','🦁','🐸','🐵','🐧','🐤','🦄','🐙','🦖','🐳','🦋','🐞','🐢','🦔','🐹','🦉','🐬','🦒'];
 let S={coins:0,stars:{},stickers:{},best:0,sound:true};
 try{const raw=localStorage.getItem('suanshu-island-v1');if(raw)S=Object.assign(S,JSON.parse(raw))}catch(e){}
+if(S.mul===undefined)S.mul=!(S.examOpts&&S.examOpts.mul===false);   // 舊存檔相容
+GEN={mul:S.mul};
 function save(){try{localStorage.setItem('suanshu-island-v1',JSON.stringify(S))}catch(e){}refreshTop()}
 function refreshTop(){$('#coins').textContent=S.coins;$('#starsTotal').textContent=Object.values(S.stars).reduce((a,b)=>a+b,0);$('#soundBtn').textContent=S.sound?'🔊':'🔇'}
 
@@ -733,19 +746,30 @@ function show(id){document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!
 document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(!g)return;SFX.tap();const id=g.dataset.go;if(id==='timed')startTimed();else show(id)});
 $('#brand').onclick=()=>{stopTimer();show('home')};
 $('#soundBtn').onclick=()=>{S.sound=!S.sound;save();SFX.tap()};
+/* 九九乘法開關：首頁與考卷設定共用同一個值 */
+function setMul(on){S.mul=on;GEN={mul:on};save();syncMulUI()}
+function syncMulUI(){
+  $('#homeMul').checked=S.mul;$('#optMul').checked=S.mul;
+  $('#mulNote').textContent=S.mul?'闖關、單元練習、60 秒快算、模擬考卷都會出乘法題。':'已關閉：所有模式都不出乘法題，乘法關卡會自動跳過。';
+  $('#timedDesc').textContent=S.mul?'加、減、九九乘法，看你一分鐘能答對幾題。':'加法和減法，看你一分鐘能答對幾題。';
+  if($('#gradeSel').options.length)updateRange();
+}
+$('#homeMul').onchange=()=>{SFX.tap();setMul($('#homeMul').checked)};
 
 function renderMap(){
   const m=$('#map');m.innerHTML='';
+  let prevOk=true;
   STAGES.forEach((st,i)=>{
-    const unlocked=i===0||(S.stars[i-1]||0)>0;const stars=S.stars[i]||0;
-    const b=document.createElement('button');b.className='stage'+(stars?' done':'')+(st.boss?' boss':'')+(unlocked?'':' locked');b.disabled=!unlocked;
-    b.innerHTML=`<span class="dot">${unlocked?st.icon:'🔒'}</span><span><span class="sn">第 ${i+1} 關</span><b>${st.name}</b><span class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span></span>`;
+    const skip=st.mul&&!S.mul;const unlocked=prevOk;const stars=S.stars[i]||0;
+    prevOk=skip?prevOk:stars>0;
+    const b=document.createElement('button');b.className='stage'+(stars?' done':'')+(st.boss?' boss':'')+(unlocked&&!skip?'':' locked');b.disabled=!unlocked||skip;
+    b.innerHTML=`<span class="dot">${skip?'⏭️':unlocked?st.icon:'🔒'}</span><span><span class="sn">第 ${i+1} 關</span><b>${st.name}</b>${skip?'<span class="note">九九乘法已關閉，跳過這關</span>':`<span class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</span>`}</span>`;
     b.onclick=()=>{SFX.tap();startStage(i)};m.appendChild(b);
   });
 }
 function renderTopics(){
   const g=$('#topicGrid');g.innerHTML='';
-  TOPIC_ORDER.forEach(k=>{const b=document.createElement('button');b.className='topic';b.innerHTML=`<span class="ti">${T[k].icon}</span><b>${T[k].name}</b><small>無限題目</small>`;b.onclick=()=>{SFX.tap();startPractice(k)};g.appendChild(b)});
+  TOPIC_ORDER.filter(allowed).forEach(k=>{const b=document.createElement('button');b.className='topic';b.innerHTML=`<span class="ti">${T[k].icon}</span><b>${T[k].name}</b><small>無限題目</small>`;b.onclick=()=>{SFX.tap();startPractice(k)};g.appendChild(b)});
 }
 function renderAlbum(){
   const a=$('#album');a.innerHTML='';const have=Object.keys(S.stickers).length;$('#albumCount').textContent=`${have} / ${STICKERS.length}`;
@@ -791,20 +815,20 @@ function startExam(c){
   const plan=gr.exam(c);
   const qs=[];const seen=new Set();
   for(const k of plan){let q,g=0;do{q=T[k].gen();g++}while(seen.has(q.text+(q.vis||''))&&g<30);seen.add(q.text+(q.vis||''));q.topic=k;qs.push(q)}
-  rand=Math.random;GEN={mul:true};
+  rand=Math.random;GEN={mul:S.mul};
   G={mode:'exam',cfg:c,code:makeCode(c),qs,i:0,answers:Array(qs.length).fill(null)};renderQ();show('play');
 }
 const newSeed=()=>ri(1000,99999);
 function renderExamSetup(){
   const sel=$('#gradeSel');
   if(!sel.options.length)sel.innerHTML=Object.entries(GRADES).map(([g,v])=>`<option value="${g}">${v.name}</option>`).join('');
-  const o=Object.assign({grade:DEFAULT_GRADE,mul:true},S.examOpts||{});
-  if(GRADES[o.grade])sel.value=o.grade;$('#optMul').checked=o.mul;
+  const o=Object.assign({grade:DEFAULT_GRADE},S.examOpts||{});
+  if(GRADES[o.grade])sel.value=o.grade;$('#optMul').checked=S.mul;
   updateRange();
 }
 function updateRange(){const o=examOpts();$('#rangeText').textContent=GRADES[o.grade].range(o)}
-function saveExamOpts(){S.examOpts=examOpts();save();updateRange()}
-$('#gradeSel').onchange=saveExamOpts;$('#optMul').onchange=()=>{SFX.tap();saveExamOpts()};
+function saveExamOpts(){S.examOpts={grade:examOpts().grade};save();updateRange()}
+$('#gradeSel').onchange=saveExamOpts;$('#optMul').onchange=()=>{SFX.tap();setMul($('#optMul').checked)};
 $('#seedInput').oninput=()=>{
   const v=$('#seedInput').value.trim(),c=parseCode(v);
   $('#codeHint').textContent=!v?'':!c?'編號格式不對，請輸入數字，例如 2468 或 2468N':!GRADES[c.grade]?`目前還沒有${c.grade}年級的題庫`:`這份是${GRADES[c.grade].name}考卷，${c.mul?'包含':'不含'}九九乘法。`;
@@ -812,24 +836,42 @@ $('#seedInput').oninput=()=>{
 $('#randomExam').onclick=()=>{SFX.tap();startExam({...examOpts(),seed:newSeed()})};
 $('#seedStart').onclick=()=>{const c=parseCode($('#seedInput').value);if(!c||!c.seed)return toast('請輸入考卷編號，例如 2468 或 2468N');SFX.tap();startExam(c)};
 
-function genQuick(){const t=ri(0,2);
+function genQuick(){const t=ri(0,GEN.mul?2:1);
   if(t===0){const a=ri(5,60),b=ri(3,39);return Q({text:`${N(a)} + ${N(b)} = ？`,ans:a+b,kind:'choice'})}
   if(t===1){const a=ri(20,99),b=ri(3,a-1);return Q({text:`${N(a)} − ${N(b)} = ？`,ans:a-b,kind:'choice'})}
   const a=ri(2,9),b=ri(2,9);return Q({text:`${N(a)} × ${N(b)} = ？`,ans:a*b,kind:'choice'});
 }
 function startTimed(){rand=Math.random;G={mode:'timed',qs:[genQuick()],i:0,correct:0,left:60,combo:0,maxCombo:0};renderQ();show('play');
-  stopTimer();timer=setInterval(()=>{G.left--;const bar=$('#timeFill');if(bar)bar.style.width=(G.left/60*100)+'%';const tl=$('#timeLeft');if(tl)tl.textContent=G.left;if(G.left<=0){stopTimer();endTimed()}},1000)}
+  stopTimer();timer=setInterval(()=>{if(G.paused)return;G.left--;const bar=$('#timeFill');if(bar)bar.style.width=(G.left/60*100)+'%';const tl=$('#timeLeft');if(tl)tl.textContent=G.left;if(G.left<=0){stopTimer();endTimed()}},1000)}
 
 function renderHud(){
   const h=$('#hud');
   if(G.mode==='stage'){h.innerHTML=`<span class="hearts" aria-label="愛心 ${G.hearts}">${'❤️'.repeat(G.hearts)}${'🤍'.repeat(3-G.hearts)}</span><div class="progress"><i style="width:${G.i/G.qs.length*100}%"></i></div><span class="pill">${STAGES[G.stage].name}</span>`}
-  else if(G.mode==='practice'){h.innerHTML=`<span class="pill">✅ <span class="num">${G.correct}</span></span><span class="pill">連擊 <span class="num combo">${G.combo}</span></span><span style="flex:1"></span><button class="btn ghost" id="endPractice">結束練習</button>`;$('#endPractice').onclick=endPractice}
+  else if(G.mode==='practice'){h.innerHTML=`<span class="pill">✅ <span class="num">${G.correct}</span></span><span class="pill">連擊 <span class="num combo">${G.combo}</span></span>`}
   else if(G.mode==='timed'){h.innerHTML=`<span class="pill">⏱ <span class="num" id="timeLeft">${G.left}</span> 秒</span><div class="progress timebar"><i id="timeFill" style="width:${G.left/60*100}%"></i></div><span class="pill">答對 <span class="num">${G.correct}</span></span>`}
   else{const done=G.answers.filter(a=>a!==null).length;h.innerHTML=`<span class="pill">📝 考卷編號 <span class="num">${G.code}</span></span><div class="progress"><i style="width:${done/G.qs.length*100}%"></i></div><span class="pill">已作答 <span class="num">${done}/${G.qs.length}</span></span>`}
 }
 
+const EXIT_MSG={stage:'這一關的進度不會保存，愛心和題目下次重新開始。',exam:'已經寫的答案不會保存，也不會打分數。',timed:'這次挑戰不會計分。'};
+function addExitBtn(){
+  const b=document.createElement('button');b.className='btn ghost exit';b.id='exitBtn';b.textContent='✕ 離開';
+  b.onclick=()=>{SFX.tap();if(G.mode==='practice')return endPractice();askExit()};
+  $('#hud').prepend(b);
+}
+function askExit(){
+  if(G.mode==='timed')G.paused=true;
+  const box=$('#exitBox');box.hidden=false;
+  box.innerHTML=`<div class="feedback bad"><div><h3>要離開嗎？</h3><p>${EXIT_MSG[G.mode]}</p></div><div class="acts"><button class="btn ghost" id="stayBtn">繼續作答</button><button class="btn coral" id="leaveBtn">離開</button></div></div>`;
+  $('#stayBtn').onclick=()=>{box.hidden=true;G.paused=false};
+  $('#leaveBtn').onclick=leave;$('#stayBtn').focus({preventScroll:true});
+}
+function leave(){
+  SFX.tap();stopTimer();$('#exitBox').hidden=true;
+  const m=G.mode;G={mode:'none',qs:[{}],i:0};
+  show(m==='stage'?'map':m==='exam'?'exam':'home');
+}
 function renderQ(){
-  const q=G.qs[G.i];renderHud();mood(true);
+  const q=G.qs[G.i];renderHud();addExitBtn();$('#exitBox').hidden=true;G.paused=false;mood(true);
   const total=G.mode==='stage'||G.mode==='exam'?` / ${G.qs.length}`:'';
   $('#qno').textContent=`第 ${G.i+1}${total} 題`;
   $('#qtag').textContent=q.topic&&T[q.topic]?T[q.topic].name:(G.mode==='timed'?'快算':'九九乘法');
@@ -876,7 +918,7 @@ function submit(v,btn){
   if(ok){G.correct++;G.combo++;G.maxCombo=Math.max(G.maxCombo,G.combo);const gain=1+(G.combo>=5?2:G.combo>=3?1:0);S.coins+=gain;save();SFX.ok();if(G.combo>0&&G.combo%5===0){SFX.coin();confetti(50)}mood(true);q.gain=gain}
   else{G.combo=0;SFX.bad();mood(false);if(G.mode==='stage')G.hearts--;if(G.mode==='practice')G.wrongN++;if(G.mode==='timed')G.left=Math.max(1,G.left-3)}
   if(G.mode==='timed'){setTimeout(()=>{if(!timer)return;G.qs.push(genQuick());G.i++;renderQ()},ok?250:700);return}
-  renderHud();
+  renderHud();addExitBtn();
   const praise=pick(['答對了！','好厲害！','太棒了！','完全正確！','你是數學小高手！']);
   const fb=document.createElement('div');fb.className='feedback '+(ok?'ok':'bad');
   fb.innerHTML=`<div><h3>${ok?praise+` <span class="combo">+${q.gain}🪙${G.combo>=3?' 連擊 '+G.combo:''}</span>`:'差一點點！正確答案是 '+fmt(q.ans)+(q.unit?' '+q.unit:'')}</h3><p>${q.exp||''}</p></div><button class="btn ${ok?'leaf':'sky'}" id="nextBtn">${G.mode==='stage'&&(G.hearts<=0||G.i===G.qs.length-1)?'看結果':'下一題 →'}</button>`;
@@ -927,14 +969,15 @@ function endExam(){
 function endStage(){
   const st=STAGES[G.stage];const pass=G.hearts>0;const stars=pass?G.hearts:0;
   if(pass){S.stars[G.stage]=Math.max(S.stars[G.stage]||0,stars);S.coins+=stars*3;save();SFX.win();confetti()}
-  const nextOk=pass&&G.stage<STAGES.length-1;
+  let ni=G.stage+1;while(ni<STAGES.length&&STAGES[ni].mul&&!S.mul)ni++;
+  const nextOk=pass&&ni<STAGES.length;
   $('#resultBox').innerHTML=`<svg class="mascot" viewBox="0 0 120 120" width="120" height="120" aria-hidden="true"><use href="${pass?'#dragon':'#dragonSad'}"/></svg>
    <h2>${pass?`${st.name} 過關！`:'愛心用完了'}</h2>
    <div class="big-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div>
    <p style="margin:0">答對 <b class="num">${G.correct}</b> 題，最高連擊 <b class="num">${G.maxCombo}</b>${pass?`，過關獎勵 <b class="num">${stars*3}</b> 枚金幣`:''}</p>
    <p class="note" style="margin:0">${pass?(stars<3?'不扣愛心全部答對，就能拿到 3 顆星！':'完美通關！'):'別灰心，題目每次都會換，再挑戰一次吧！'}</p>
    <div class="stat-row"><button class="btn" id="again">再玩一次</button>${nextOk?'<button class="btn leaf" id="nextStage">下一關 →</button>':''}<button class="btn ghost" data-go="map">回地圖</button></div>`;
-  const i=G.stage;$('#again').onclick=()=>startStage(i);if(nextOk)$('#nextStage').onclick=()=>startStage(i+1);
+  const i=G.stage;$('#again').onclick=()=>startStage(i);if(nextOk)$('#nextStage').onclick=()=>startStage(ni);
   show('result');
 }
 function endPractice(){
@@ -953,7 +996,7 @@ function endTimed(){
   $('#again').onclick=startTimed;show('result');
 }
 
-refreshTop();
+refreshTop();syncMulUI();
 </script>
 </body>
 </html>
